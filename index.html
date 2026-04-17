@@ -201,6 +201,7 @@ header{
   display:flex;flex-direction:column;overflow:hidden;
 }
 .detail-drawer.open{transform:translateX(0)}
+.detail-drawer *{box-sizing:border-box}
 .dd-header{
   padding:16px 20px;border-bottom:1px solid var(--border);
   display:flex;align-items:flex-start;gap:12px;flex-shrink:0;
@@ -226,7 +227,7 @@ header{
 .warm .ddsb-num,.warm .ddsb-label{color:var(--orange)}
 .watch .ddsb-num,.watch .ddsb-label{color:#c17800}
 .cold .ddsb-num,.cold .ddsb-label{color:var(--green)}
-.dd-body{flex:1;overflow-y:auto;padding:16px 20px}
+.dd-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:20px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
 .dd-section{margin-bottom:20px}
 .dd-section-title{
   font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
@@ -352,6 +353,7 @@ header{
     <option value="sale_amount">Sort: Sale Price</option>
   </select>
   <span class="tb-count" id="tbCount"></span>
+  <span class="tb-count" id="matchInfo" style="margin-left:0;color:var(--text3)"></span>
 </div>
 
 <!-- Weights Panel -->
@@ -461,68 +463,98 @@ function scoreProperty(p){
   const cats = {holdPeriod:0, loanMaturity:0, distress:0, marketSignals:0};
 
   // HOLD PERIOD
-  const saleDate = parseD(p.sale_recorded_date||p.sale_date);
+  // Use most recent sale date (sale_recorded_date = most recent, sale2_recorded_date = prior sale)
+  const sd1 = parseD(p.sale_recorded_date || p.sale_date);
+  const sd2 = parseD(p.sale2_recorded_date);
+  let saleDate = null;
+  if(sd1 && sd2) saleDate = sd1 > sd2 ? sd1 : sd2;
+  else saleDate = sd1 || sd2;
+
   if(saleDate){
     const yrs = yearsSince(saleDate);
+    const saleDateStr = fmtDate(saleDate);
     let best=0, bestLabel='';
     for(const period of holdPeriods){
       const diff = yrs - period;
       let s=0, lbl='';
       if(diff >= -0.75 && diff < 0){
+        const moAway = Math.round(-diff*12);
         s = 60 + (1-(Math.abs(diff)/0.75))*40;
-        lbl = `Approaching ${period}-yr hold (${Math.round(-diff*12)}mo away)`;
-      } else if(diff >= 0 && diff < 1){
-        s = 100 - diff*40;
-        lbl = `At ${period}-yr hold milestone`;
+        lbl = `${moAway} month${moAway!==1?'s':''} away from ${period}-year hold milestone (last sold ${saleDateStr})`;
+      } else if(diff >= 0 && diff < 0.5){
+        s = 100;
+        lbl = `Just hit ${period}-year hold milestone (last sold ${saleDateStr})`;
+      } else if(diff >= 0.5 && diff < 1){
+        s = 80;
+        lbl = `${Math.round(diff*12)} months past ${period}-year hold (last sold ${saleDateStr})`;
       } else if(diff >= 1 && diff < 2){
         s = 60 - (diff-1)*30;
-        lbl = `${period}-yr hold passed (${Math.round(diff*12)}mo ago)`;
+        lbl = `${Math.round(yrs*10)/10} years since sale — passed ${period}-yr milestone (last sold ${saleDateStr})`;
       }
       if(s>best){ best=s; bestLabel=lbl; }
     }
     cats.holdPeriod = Math.round(best);
-    if(bestLabel) details.push({cat:'Hold Period',label:bestLabel});
-    else details.push({cat:'Hold Period',label:`${Math.round(yrs*10)/10} yrs since last sale`});
+    if(bestLabel) details.push({cat:'Hold Period', label:bestLabel});
+    else {
+      const sortedPeriods = [...holdPeriods].sort((a,b)=>a-b);
+      const nextMilestone = sortedPeriods.find(period => period > yrs);
+      if(nextMilestone){
+        const moToNext = Math.round((nextMilestone - yrs)*12);
+        details.push({cat:'Hold Period', label:`${Math.round(yrs*10)/10} yrs since last sale — ${moToNext} months until ${nextMilestone}-yr milestone (last sold ${saleDateStr})`});
+      } else {
+        details.push({cat:'Hold Period', label:`${Math.round(yrs*10)/10} yrs since last sale (last sold ${saleDateStr})`});
+      }
+    }
+  } else {
+    details.push({cat:'Hold Period', label:'No sale date on record — hold period cannot be calculated'});
   }
 
   // LOAN MATURITY -- only score the most relevant mortgage
   // Logic: prefer the one with the future or most recent maturity date
   // Ignore maturities that are more than 5 years in the past (stale/paid off)
   const today2 = new Date();
-  const STALE_CUTOFF_DAYS = -5 * 365; // ignore if matured more than 5 years ago
+  const STALE_CUTOFF_DAYS = -5 * 365;
   const mats = [
-    {date:parseD(p.mortgage_maturity_date), amt:parseFloat(p.mortgage_amount)||0, name:'Primary loan'},
-    {date:parseD(p.mortgage2_maturity_date), amt:parseFloat(p.mortgage2_amount)||0, name:'Second loan'},
+    {date:parseD(p.mortgage_maturity_date), amt:parseFloat(p.mortgage_amount)||0,
+     lender:p.mortgage_standardized_name||p.mortgage_recorded_name, name:'Primary loan'},
+    {date:parseD(p.mortgage2_maturity_date), amt:parseFloat(p.mortgage2_amount)||0,
+     lender:p.mortgage2_standardized_name||p.mortgage2_recorded_name, name:'Second loan'},
   ].filter(m => {
     if(!m.date) return false;
     const d = daysUntil(m.date);
-    return d > STALE_CUTOFF_DAYS; // only keep if not stale
+    return d > STALE_CUTOFF_DAYS;
   });
 
-  // Pick the best candidate: prefer future maturities, then most recent past
-  // If multiple future maturities, pick soonest (highest urgency)
   const futureMats = mats.filter(m => daysUntil(m.date) > 0).sort((a,b)=>daysUntil(a.date)-daysUntil(b.date));
   const pastMats = mats.filter(m => daysUntil(m.date) <= 0).sort((a,b)=>daysUntil(b.date)-daysUntil(a.date));
   const activeMats = futureMats.length ? futureMats : pastMats;
 
   let bestMat=0;
-  for(const {date,name} of activeMats.slice(0,1)){ // only score the top candidate
+  if(activeMats.length === 0){
+    details.push({cat:'Loan Maturity', label:'No active mortgage maturity date on record'});
+  }
+  for(const {date,name,lender,amt} of activeMats.slice(0,1)){
     if(!date) continue;
     const days = daysUntil(date);
+    const lenderStr = lender ? ` (${lender}${amt?' — '+fmtMoney(amt):''})`:'';
+    const matDateStr = fmtDate(date);
     let s=0, lbl='';
-    if(days<0&&days>-180){s=80;lbl=`${name} matured ${Math.abs(Math.round(days))} days ago`;}
-    else if(days<0&&days>-365){s=60;lbl=`${name} matured ${Math.abs(Math.round(days/30))} months ago`;}
-    else if(days<0){s=30;lbl=`${name} matured ${Math.abs(Math.round(days/365*10)/10)} yrs ago`;}
-    else if(days<90){s=95;lbl=`${name} matures in ${Math.round(days)} days`;}
-    else if(days<180){s=85;lbl=`${name} matures in ${Math.round(days/30)} months`;}
-    else if(days<365){s=70;lbl=`${name} matures within 1 year`;}
-    else if(days<730){s=45;lbl=`${name} matures in ~${Math.round(days/365)} yrs`;}
-    else if(days<1095){s=20;lbl=`${name} matures in ~${Math.round(days/365)} yrs`;}
-    if(s>bestMat){ bestMat=s; if(lbl) details.push({cat:'Loan Maturity',label:lbl}); }
+    if(days<0&&days>-180){s=80;lbl=`${name}${lenderStr} matured ${Math.abs(Math.round(days))} days ago — ${matDateStr}`;}
+    else if(days<0&&days>-365){s=60;lbl=`${name}${lenderStr} matured ${Math.abs(Math.round(days/30))} months ago — ${matDateStr}`;}
+    else if(days<0){s=30;lbl=`${name}${lenderStr} matured ${Math.abs(Math.round(days/365*10)/10)} yrs ago — ${matDateStr}`;}
+    else if(days<90){s=95;lbl=`${name}${lenderStr} matures in ${Math.round(days)} days — ${matDateStr}`;}
+    else if(days<180){s=85;lbl=`${name}${lenderStr} matures in ${Math.round(days/30)} months — ${matDateStr}`;}
+    else if(days<365){s=70;lbl=`${name}${lenderStr} matures within 1 year — ${matDateStr}`;}
+    else if(days<730){s=45;lbl=`${name}${lenderStr} matures in ~${Math.round(days/365)} yrs — ${matDateStr}`;}
+    else if(days<1095){s=20;lbl=`${name}${lenderStr} matures in ~${Math.round(days/365)} yrs — ${matDateStr}`;}
+    else{lbl=`${name}${lenderStr} — maturity ${matDateStr} (>3 yrs away)`;}
+    if(s>bestMat){ bestMat=s; }
+    if(lbl) details.push({cat:'Loan Maturity',label:lbl});
   }
   cats.loanMaturity = bestMat;
   if(p.mortgage_amount && p.mortgage2_amount && activeMats.length>1){
-    details.push({cat:'Loan Maturity',label:'Multiple active mortgages on record'});
+    const l2 = activeMats[1];
+    details.push({cat:'Loan Maturity',label:`Multiple active loans — second: ${l2.lender||'unknown lender'}${l2.amt?' '+fmtMoney(l2.amt):''}, matures ${fmtDate(l2.date)}`});
     cats.loanMaturity = Math.max(cats.loanMaturity, 25);
   }
 
@@ -530,48 +562,75 @@ function scoreProperty(p){
   const prefoActive = p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True';
   if(prefoActive){
     cats.distress=100;
-    details.push({cat:'Distress',label:'🚨 Active preforeclosure'});
+    const recordingDate = fmtDate(p.preforeclosure_recording_date);
+    const plaintiff = p.preforeclosure_plaintiff_1 ? ` — Filed by: ${p.preforeclosure_plaintiff_1}` : '';
+    const docType = p.preforeclosure_doc_type ? ` (${p.preforeclosure_doc_type})` : '';
+    const deedCat = p.preforeclosure_deed_category ? ` — Category: ${p.preforeclosure_deed_category}` : '';
+    details.push({cat:'Distress',label:`🚨 Active preforeclosure${docType}${deedCat}${recordingDate?', recorded '+recordingDate:''}${plaintiff}`});
   }
   const auction = parseD(p.preforeclosure_auction_date);
   if(auction){
     const d = daysUntil(auction);
+    const time = p.preforeclosure_auction_time ? ` at ${p.preforeclosure_auction_time}` : '';
+    const loc = p.preforeclosure_street_address_of_auction_call ? ` — Location: ${p.preforeclosure_street_address_of_auction_call}` : '';
+    const trustee = p.preforeclosure_trustee_name ? ` — Trustee: ${p.preforeclosure_trustee_name}` : '';
     if(d!==null && d>0 && d<180){
       cats.distress=Math.max(cats.distress,90);
-      details.push({cat:'Distress',label:`Foreclosure auction in ${Math.round(d)} days`});
+      details.push({cat:'Distress',label:`Foreclosure auction in ${Math.round(d)} days (${fmtDate(p.preforeclosure_auction_date)}${time})${loc}${trustee}`});
+    } else if(d!==null && d>0){
+      cats.distress=Math.max(cats.distress,50);
+      details.push({cat:'Distress',label:`Foreclosure auction scheduled: ${fmtDate(p.preforeclosure_auction_date)}${time}${loc}${trustee}`});
     } else if(d!==null && d<=0){
       cats.distress=Math.max(cats.distress,60);
-      details.push({cat:'Distress',label:`Foreclosure auction date passed`});
+      details.push({cat:'Distress',label:`Foreclosure auction date passed (${fmtDate(p.preforeclosure_auction_date)})${trustee}`});
     }
   }
   if(p.preforeclosure_final_judgement_amount && parseFloat(p.preforeclosure_final_judgement_amount)>0){
     cats.distress=Math.max(cats.distress,70);
     const amt=fmtMoney(p.preforeclosure_final_judgement_amount);
-    details.push({cat:'Distress',label:`Final judgement: ${amt||'recorded'}`});
+    const plaintiff2 = p.preforeclosure_plaintiff_1 ? ` — Plaintiff: ${p.preforeclosure_plaintiff_1}` : '';
+    details.push({cat:'Distress',label:`Final judgement on record: ${amt}${plaintiff2}`});
   }
-  if(p.preforeclosure_recording_date && !prefoActive){
+  if(p.preforeclosure_recording_date && !prefoActive && !auction && !(p.preforeclosure_final_judgement_amount>0)){
     cats.distress=Math.max(cats.distress,40);
-    details.push({cat:'Distress',label:'Preforeclosure recording on file'});
+    const deedCat2 = p.preforeclosure_deed_category ? ` — ${p.preforeclosure_deed_category}` : '';
+    const docType2 = p.preforeclosure_doc_type ? ` (${p.preforeclosure_doc_type})` : '';
+    details.push({cat:'Distress',label:`Preforeclosure filing on record${docType2}${deedCat2} — ${fmtDate(p.preforeclosure_recording_date)}`});
+  }
+  if(!prefoActive && !auction && !p.preforeclosure_recording_date && !p.preforeclosure_final_judgement_amount){
+    details.push({cat:'Distress',label:'No distress signals on record'});
   }
 
   // MARKET SIGNALS
   if(p.vacancy){
     const v=parseFloat(p.vacancy);
     if(!isNaN(v)){
-      if(v>20){cats.marketSignals=Math.max(cats.marketSignals,70);details.push({cat:'Market',label:`High vacancy: ${v.toFixed(1)}%`});}
-      else if(v>10){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`Elevated vacancy: ${v.toFixed(1)}%`});}
+      if(v>20){cats.marketSignals=Math.max(cats.marketSignals,70);details.push({cat:'Market',label:`High vacancy: ${v.toFixed(1)}% (above 20% threshold)`});}
+      else if(v>10){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`Elevated vacancy: ${v.toFixed(1)}% (above 10% threshold)`});}
+      else {details.push({cat:'Market',label:`Vacancy: ${v.toFixed(1)}% (healthy)`});}
     }
   }
   if(p.actual_cap_rate){
     const c=parseFloat(p.actual_cap_rate);
-    if(!isNaN(c)&&c>0&&c<4.5){cats.marketSignals=Math.max(cats.marketSignals,35);details.push({cat:'Market',label:`Low cap rate: ${c.toFixed(2)}%`});}
+    if(!isNaN(c)&&c>0){
+      if(c<4.5){cats.marketSignals=Math.max(cats.marketSignals,35);details.push({cat:'Market',label:`Compressed cap rate: ${c.toFixed(2)}% — may indicate value-add or sell pressure`});}
+      else {details.push({cat:'Market',label:`Cap rate: ${c.toFixed(2)}%`});}
+    }
   }
   const yrBuilt=parseFloat(p.year_built);
   if(!isNaN(yrBuilt)){
     const age=new Date().getFullYear()-yrBuilt;
     if(age>60&&!p.year_renovated){
       cats.marketSignals=Math.max(cats.marketSignals,25);
-      details.push({cat:'Market',label:`Aging building (${Math.round(yrBuilt)}, no renovation on file)`});
+      details.push({cat:'Market',label:`Aging building: built ${Math.round(yrBuilt)} (${age} yrs old), no renovation on record`});
+    } else if(p.year_renovated){
+      details.push({cat:'Market',label:`Built ${Math.round(yrBuilt)}, renovated ${Math.round(p.year_renovated)}`});
     }
+  }
+  if(p._hasCostar){
+    details.push({cat:'Market',label:`CoStar data matched — vacancy and cap rate data augmented`});
+  } else {
+    details.push({cat:'Market',label:`No CoStar match — vacancy/cap rate data unavailable`});
   }
 
   // WEIGHTED FINAL
@@ -598,40 +657,88 @@ function getWeights(){
 }
 
 // ─── DATA FETCHING ──────────────────────────────────────────────────────────
+async function fetchAll(table, filters){
+  // Supabase default limit is 1000 -- paginate to get everything
+  const PAGE = 1000;
+  let all = [], from = 0, done = false;
+  while(!done){
+    let q = db.from(table).select('*').range(from, from+PAGE-1);
+    if(filters) for(const [col,val] of Object.entries(filters)) q = q.ilike(col,val);
+    const { data, error } = await q;
+    if(error || !data || data.length === 0){ done=true; break; }
+    all = all.concat(data);
+    if(data.length < PAGE) done = true;
+    else from += PAGE;
+  }
+  return all;
+}
+
 async function loadData(){
   setLoading(true);
   document.getElementById('loadingList').style.display='block';
 
-  // Fetch Reonomy multifamily properties
-  const { data: props } = await db.from('properties')
-    .select('*').ilike('property_type','%multifamily%').limit(2000);
+  // Fetch ALL Reonomy multifamily properties (paginated past 1000 limit)
+  const props = await fetchAll('properties', {'property_type':'%multifamily%'});
 
-  // Fetch CoStar
-  const { data: costar } = await db.from('costar2')
-    .select('*').limit(2000);
+  // Fetch ALL CoStar records
+  const costar = await fetchAll('costar2', null);
 
-  // Build CoStar lookup by address
+  // Build CoStar lookup by normalized address
   const costarMap = {};
   (costar||[]).forEach(c=>{
     if(c.property_address){
-      const key = c.property_address.trim().toLowerCase();
+      const key = normalizeAddr(c.property_address);
       costarMap[key] = c;
     }
   });
 
-  // Merge
+  // Match and merge -- ALL Reonomy properties are included
+  // CoStar data augments them where address matches (vacancy, cap rate, etc.)
+  let matchCount = 0;
   allData = (props||[]).map(p=>{
-    const addrKey = (p.address_line_1||'').trim().toLowerCase();
-    const costarMatch = costarMap[addrKey] || null;
-    const merged = costarMatch ? {...p, ...costarMatch, _reonomy:p, _costar:costarMatch} : p;
+    const key = normalizeAddr(p.address_line_1||'');
+    const costarMatch = costarMap[key] || null;
+    if(costarMatch) matchCount++;
+    // Reonomy fields take priority; CoStar fills in vacancy, cap rate, etc.
+    const merged = costarMatch
+      ? {
+          ...p,
+          // CoStar-only fields we want to augment with
+          vacancy: costarMatch.vacancy || p.vacancy,
+          actual_cap_rate: costarMatch.actual_cap_rate || p.actual_cap_rate,
+          pro_forma_cap_rate: costarMatch.pro_forma_cap_rate,
+          price_per_unit: costarMatch.price_per_unit,
+          building_class: costarMatch.building_class,
+          submarket_name: costarMatch.submarket_name,
+          buyer_true_company: costarMatch.buyer_true_company,
+          seller_true_company: costarMatch.seller_true_company,
+          _costar: costarMatch,
+        }
+      : p;
+    merged._hasCostar = !!costarMatch;
     const {score,tier,details,cats} = scoreProperty(merged);
     return {...merged, _score:score, _tier:tier, _details:details, _cats:cats};
   });
+
+  console.log(`Loaded ${allData.length} properties, ${matchCount} matched with CoStar`);
+  document.getElementById('matchInfo').textContent =
+    `${allData.length.toLocaleString()} properties · ${matchCount} CoStar matches`;
 
   setLoading(false);
   document.getElementById('loadingList').style.display='none';
   applyFilters();
   initMap();
+}
+
+function normalizeAddr(s){
+  return (s||'').toLowerCase().trim()
+    .replace(/\s+/g,' ')
+    .replace(/\bstreet\b/g,'st').replace(/\bavenue\b/g,'ave')
+    .replace(/\bboulevard\b/g,'blvd').replace(/\bdrive\b/g,'dr')
+    .replace(/\broad\b/g,'rd').replace(/\bcourt\b/g,'ct')
+    .replace(/\bnorthwest\b/g,'nw').replace(/\bnortheast\b/g,'ne')
+    .replace(/\bsouthwest\b/g,'sw').replace(/\bsoutheast\b/g,'se')
+    .replace(/[.,#]/g,'').trim();
 }
 
 // ─── FILTERING & SORTING ────────────────────────────────────────────────────
