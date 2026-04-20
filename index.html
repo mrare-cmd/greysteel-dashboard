@@ -227,7 +227,7 @@ header{
 .warm .ddsb-num,.warm .ddsb-label{color:var(--orange)}
 .watch .ddsb-num,.watch .ddsb-label{color:#c17800}
 .cold .ddsb-num,.cold .ddsb-label{color:var(--green)}
-.dd-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:20px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.dd-body{flex:1;overflow-y:scroll;padding:16px 20px 40px;display:flex;flex-direction:column;gap:20px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0;}
 .dd-section{margin-bottom:20px}
 .dd-section-title{
   font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
@@ -253,6 +253,7 @@ header{
 .sb-reasons li{font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:6px}
 .sb-reasons li::before{content:'•';color:var(--text3);flex-shrink:0}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dg-section-head{grid-column:1/-1;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-top:8px;padding-bottom:4px;border-bottom:1px solid var(--blue-light)}
 .dg-item{padding:10px;background:var(--bg);border-radius:6px}
 .dg-label{font-size:11px;color:var(--text3);margin-bottom:3px}
 .dg-val{font-size:13px;font-weight:500;color:var(--text)}
@@ -888,25 +889,45 @@ function propCard(p){
 
 function buildChips(p){
   const chips=[];
-  if(p._tier==='hot'||p._tier==='warm'){
-    const prefoActive=p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True';
-    if(prefoActive) chips.push({cls:'distress',label:'⚠ Preforeclosure'});
-    const mat=parseD(p.mortgage_maturity_date);
-    if(mat){
-      const d=daysUntil(mat);
-      if(d!==null&&d<365) chips.push({cls:'maturity',label:`Mat. ${fmtDate(p.mortgage_maturity_date)}`});
-    }
-    const sd=parseD(p.sale_recorded_date||p.sale_date);
-    if(sd){
-      const yrs=yearsSince(sd);
-      chips.push({cls:'hold',label:`${Math.round(yrs*10)/10} yr hold`});
-    }
-  } else {
-    const sd=parseD(p.sale_recorded_date||p.sale_date);
-    if(sd) chips.push({cls:'hold',label:`${Math.round(yearsSince(sd)*10)/10} yr hold`});
-    const mat=parseD(p.mortgage_maturity_date);
-    if(mat) chips.push({cls:'maturity',label:`Mat. ${fmtDate(p.mortgage_maturity_date)}`});
+  const STALE = -365; // ignore maturity dates more than 1 year in the past
+
+  // Most recent sale date
+  const sd1 = parseD(p.sale_recorded_date||p.sale_date);
+  const sd2 = parseD(p.sale2_recorded_date);
+  const sd = (sd1&&sd2) ? (sd1>sd2?sd1:sd2) : (sd1||sd2);
+
+  // Find the most relevant non-stale maturity date
+  const mat1 = parseD(p.mortgage_maturity_date);
+  const mat2 = parseD(p.mortgage2_maturity_date);
+  const mat1Days = mat1 ? daysUntil(mat1) : null;
+  const mat2Days = mat2 ? daysUntil(mat2) : null;
+  const mat1Valid = mat1Days !== null && mat1Days > STALE;
+  const mat2Valid = mat2Days !== null && mat2Days > STALE;
+
+  // Pick best maturity to show: prefer future, then most recent past
+  let bestMat = null;
+  if(mat1Valid && mat2Valid){
+    bestMat = (mat1Days >= 0 && mat2Days < 0) ? mat1 :
+              (mat2Days >= 0 && mat1Days < 0) ? mat2 :
+              (mat1Days >= 0) ? (mat1Days < mat2Days ? mat1 : mat2) : // both future: pick soonest
+              (mat1Days > mat2Days ? mat1 : mat2); // both past: pick most recent
+  } else if(mat1Valid) bestMat = mat1;
+  else if(mat2Valid) bestMat = mat2;
+
+  const prefoActive = p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True';
+  if(prefoActive) chips.push({cls:'distress',label:'⚠ Preforeclosure'});
+
+  if(bestMat){
+    const d = daysUntil(bestMat);
+    if(d < 0) chips.push({cls:'maturity',label:`Mat. ${fmtDate(bestMat)} (past)`});
+    else chips.push({cls:'maturity',label:`Mat. ${fmtDate(bestMat)}`});
   }
+
+  if(sd){
+    const yrs = yearsSince(sd);
+    chips.push({cls:'hold',label:`${Math.round(yrs*10)/10} yr hold`});
+  }
+
   if(p.vacancy&&parseFloat(p.vacancy)>10) chips.push({cls:'market',label:`${parseFloat(p.vacancy).toFixed(0)}% vacant`});
   return chips.slice(0,4);
 }
@@ -919,6 +940,24 @@ function initMap(){
     attribution:'© CARTO',maxZoom:19
   }).addTo(map);
   L.control.zoom({position:'bottomright'}).addTo(map);
+
+  // Add DC border
+  fetch('https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/DC.geojson')
+    .then(r=>r.json())
+    .then(gj=>{
+      L.geoJSON(gj,{
+        style:{color:'#1a73e8',weight:2.5,fill:false,opacity:0.7,dashArray:'6,4'}
+      }).addTo(map);
+    })
+    .catch(()=>{
+      // Fallback DC boundary polygon
+      const dcBorder = [
+        [38.9953,-77.0386],[38.9929,-77.1197],[38.9601,-77.1195],
+        [38.8893,-77.0419],[38.7911,-77.0402],[38.7916,-76.9094],
+        [38.8930,-76.9090],[38.9953,-77.0386]
+      ];
+      L.polygon(dcBorder,{color:'#1a73e8',weight:2.5,fill:false,opacity:0.7,dashArray:'6,4'}).addTo(map);
+    });
   markersLayer = L.layerGroup().addTo(map);
 }
 
@@ -1003,7 +1042,7 @@ function openDrawer(p){
       </div>
       <div class="dd-section">
         <div class="dd-section-title">Property Details</div>
-        <div class="detail-grid">${grid}</div>
+        ${grid}
       </div>
       ${contacts?`<div class="dd-section"><div class="dd-section-title">Contacts</div>${contacts}</div>`:''}
       ${reoLink?`<div class="dd-section">${reoLink}</div>`:''}
@@ -1014,42 +1053,82 @@ function openDrawer(p){
 }
 
 function buildDetailGrid(p){
-  // Pick the most relevant mortgage to display
   const today = new Date();
-  const STALE = -5*365*24*3600*1000;
+  const STALE = -365*24*3600*1000;
   const mat1 = parseD(p.mortgage_maturity_date);
   const mat2 = parseD(p.mortgage2_maturity_date);
   const mat1Valid = mat1 && (mat1-today) > STALE;
   const mat2Valid = mat2 && (mat2-today) > STALE;
+  const c = p._costar || {};
 
-  const rows=[
-    ['Address', p.address_full||p.property_address],
-    ['Property Type', p.property_type],
+  const section = (title, rows) => {
+    const filtered = rows.filter(r=>r&&r[1]!=null&&r[1]!==undefined&&r[1]!=='');
+    if(!filtered.length) return '';
+    return `<div class="dg-section-head">${title}</div>` +
+      filtered.map(([label,val,full])=>`
+        <div class="dg-item ${full?'full':''}">
+          <div class="dg-label">${label}</div>
+          <div class="dg-val">${val}</div>
+        </div>`).join('');
+  };
+
+  const reoSection = section('Property (Reonomy)', [
+    ['Address', p.address_full, true],
+    ['Type', p.property_type],
     ['Subtype', p.property_subtype],
     ['Year Built', p.year_built?Math.round(p.year_built):null],
     ['Year Renovated', p.year_renovated?Math.round(p.year_renovated):null],
-    ['Total Units', p.total_units||p.number_of_units],
-    ['Bldg SF', p.gross_building_area||p.building_sf],
-    ['Sale Price', fmtMoney(p.sale_amount||p.sale_price)],
-    ['Sale Date', fmtDate(p.sale_recorded_date||p.sale_date)],
-    ['Price/SF', p.sales_price_per_sf||p.price_per_sf?`$${parseFloat(p.sales_price_per_sf||p.price_per_sf).toFixed(2)}`:null],
-    ['Price/Unit', fmtMoney(p.price_per_unit)],
-    ['Cap Rate', p.actual_cap_rate?parseFloat(p.actual_cap_rate).toFixed(2)+'%':null],
-    ['Vacancy', p.vacancy?parseFloat(p.vacancy).toFixed(1)+'%':null],
-    mat1Valid?['Mortgage Amt', fmtMoney(p.mortgage_amount)]:null,
-    mat1Valid?['Mortgage Lender', p.mortgage_recorded_name||p.mortgage_standardized_name]:null,
-    mat1Valid?['Maturity Date', fmtDate(p.mortgage_maturity_date)]:null,
-    mat2Valid?['Mortgage 2 Amt', fmtMoney(p.mortgage2_amount)]:null,
-    mat2Valid?['Mortgage 2 Lender', p.mortgage2_recorded_name||p.mortgage2_standardized_name]:null,
-    mat2Valid?['Maturity 2 Date', fmtDate(p.mortgage2_maturity_date)]:null,
-    ['Owner', p.reported_owner_name],
+    ['Total Units', p.total_units],
+    ['Bldg SF', p.gross_building_area?Math.round(p.gross_building_area).toLocaleString()+' SF':null],
     ['APN', p.apn],
-  ];
-  return rows.filter(r=>r&&r[1]!=null&&r[1]!==undefined&&r[1]!=='').map(([label,val])=>`
-    <div class="dg-item ${label==='Address'?'full':''}">
-      <div class="dg-label">${label}</div>
-      <div class="dg-val">${val}</div>
-    </div>`).join('');
+    ['Owner', p.reported_owner_name, true],
+    ['Owner Mailing', p.reported_mailing_address_full, true],
+  ]);
+
+  const saleSection = section('Sale History', [
+    ['Sale Price', fmtMoney(p.sale_amount)],
+    ['Sale Date', fmtDate(p.sale_recorded_date)],
+    ['Price/SF', p.sales_price_per_sf?`$${parseFloat(p.sales_price_per_sf).toFixed(2)}`:null],
+    ['Prior Sale', fmtMoney(p.sale2_amount)],
+    ['Prior Sale Date', fmtDate(p.sale2_recorded_date)],
+  ]);
+
+  const mortSection = section('Mortgage', [
+    mat1Valid?['Lender', p.mortgage_standardized_name||p.mortgage_recorded_name, true]:null,
+    mat1Valid?['Amount', fmtMoney(p.mortgage_amount)]:null,
+    mat1Valid?['Recorded', fmtDate(p.mortgage_recorded_date)]:null,
+    mat1Valid?['Maturity', fmtDate(p.mortgage_maturity_date)]:null,
+    mat2Valid?['Lender 2', p.mortgage2_standardized_name||p.mortgage2_recorded_name, true]:null,
+    mat2Valid?['Amount 2', fmtMoney(p.mortgage2_amount)]:null,
+    mat2Valid?['Maturity 2', fmtDate(p.mortgage2_maturity_date)]:null,
+  ]);
+
+  const costarSection = p._hasCostar ? section('Market Data (CoStar)', [
+    ['Address (CoStar)', c.property_address, true],
+    ['County', c.property_county],
+    ['Submarket', c.submarket_name],
+    ['Building Class', c.building_class],
+    ['Units (CoStar)', c.number_of_units],
+    ['Bldg SF (CoStar)', c.building_sf?Math.round(parseFloat(c.building_sf)).toLocaleString()+' SF':null],
+    ['Vacancy', c.vacancy?parseFloat(c.vacancy).toFixed(1)+'%':null],
+    ['Actual Cap Rate', c.actual_cap_rate?parseFloat(c.actual_cap_rate).toFixed(2)+'%':null],
+    ['Pro Forma Cap', c.pro_forma_cap_rate?parseFloat(c.pro_forma_cap_rate).toFixed(2)+'%':null],
+    ['Sale Price (CoStar)', fmtMoney(c.sale_price)],
+    ['Sale Date (CoStar)', fmtDate(c.sale_date)],
+    ['Price/Unit', fmtMoney(c.price_per_unit)],
+    ['Price/SF (CoStar)', c.price_per_sf?`$${parseFloat(c.price_per_sf).toFixed(2)}`:null],
+    ['Buyer', c.buyer_true_company, true],
+    ['Seller', c.seller_true_company, true],
+    ['Down Payment', fmtMoney(c.down_payment)],
+    ['1st TD Balance', fmtMoney(c.first_trust_deed_balance)],
+    ['1st TD Lender', c.first_trust_deed_lender, true],
+    ['1st TD Terms', c.first_trust_deed_terms, true],
+    ['Gross Income', fmtMoney(c.gross_income)],
+    ['Net Income', fmtMoney(c.net_income)],
+    ['Match Method', p._matchMethod==='coord'?'GPS coordinates':'Address string'],
+  ]) : '<div class="dg-item full"><div class="dg-label">CoStar</div><div class="dg-val" style="color:var(--text3)">No CoStar match found</div></div>';
+
+  return `<div class="detail-grid">${reoSection}${saleSection}${mortSection}${costarSection}</div>`;
 }
 
 function buildContacts(p){
@@ -1130,6 +1209,11 @@ function setLoading(v){
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+// Prevent map from stealing scroll events when mouse is over the drawer
+document.getElementById('detailDrawer').addEventListener('wheel', function(e){
+  e.stopPropagation();
+}, {passive:true});
+
 loadData();
 </script>
 </body>
