@@ -361,107 +361,150 @@ function getWeights(){
 // ─── SCORING ────────────────────────────────────────────────────────────────
 function scoreProperty(p){
   const details = [];
-  const cats = {holdPeriod:0, loanMaturity:0, distress:0, marketSignals:0};
-  const t = p._trepp; // Trepp record if matched
+  const t = p._trepp;
+  // Track which categories have data for renormalization
+  const catScores = {};
 
-  // ── HOLD PERIOD ──
-  const sd1 = parseD(p.sale_recorded_date||p.sale_date);
-  const sd2 = parseD(p.sale2_recorded_date);
-  let saleDate = (sd1&&sd2)?(sd1>sd2?sd1:sd2):(sd1||sd2);
+  // ── HOLD PERIOD ──────────────────────────────────────────────────────────────
+  // Source: most recent of sale_recorded_date / sale2_recorded_date
+  const sd1=parseD(p.sale_recorded_date||p.sale_date), sd2=parseD(p.sale2_recorded_date);
+  const saleDate=(sd1&&sd2)?(sd1>sd2?sd1:sd2):(sd1||sd2);
   if(saleDate){
     const yrs=yearsSince(saleDate), saleDateStr=fmtDate(saleDate);
     let best=0, bestLabel='';
-    for(const period of holdPeriods){
-      const diff=yrs-period; let s=0,lbl='';
-      if(diff>=-0.75&&diff<0){const mo=Math.round(-diff*12);s=60+(1-(Math.abs(diff)/0.75))*40;lbl=`${mo} month${mo!==1?'s':''} away from ${period}-yr hold milestone (sold ${saleDateStr})`;}
-      else if(diff>=0&&diff<0.5){s=100;lbl=`Just hit ${period}-yr hold milestone (sold ${saleDateStr})`;}
-      else if(diff>=0.5&&diff<1){s=80;lbl=`${Math.round(diff*12)} months past ${period}-yr hold (sold ${saleDateStr})`;}
-      else if(diff>=1&&diff<2){s=60-(diff-1)*30;lbl=`${Math.round(yrs*10)/10} yrs since sale — past ${period}-yr milestone (sold ${saleDateStr})`;}
-      if(s>best){best=s;bestLabel=lbl;}
+    for(const m of holdPeriods){
+      const monthsTo = (m - yrs) * 12; // positive = approaching, negative = past
+      let s=0, lbl='';
+      if(monthsTo > 9 || monthsTo < -24){
+        s = 0; // outside scoring window
+      } else if(monthsTo > 0){
+        // Approaching: linear ramp 60→100 as months_to goes 9→0
+        s = Math.round(60 + 40 * (9 - monthsTo) / 9);
+        lbl = `${Math.round(monthsTo)} month${Math.round(monthsTo)!==1?'s':''} away from ${m}-yr hold milestone (sold ${saleDateStr})`;
+      } else {
+        const mp = -monthsTo; // months past milestone
+        if(mp <= 6){
+          s = Math.round(100 - 20 * (mp / 6));
+          lbl = `Just hit ${m}-yr hold milestone (sold ${saleDateStr})`;
+        } else if(mp <= 12){
+          s = Math.round(80 - 20 * ((mp - 6) / 6));
+          lbl = `${Math.round(mp)} months past ${m}-yr hold (sold ${saleDateStr})`;
+        } else if(mp <= 24){
+          s = Math.round(60 - 30 * ((mp - 12) / 12));
+          lbl = `${(yrs).toFixed(1)} yrs since sale — past ${m}-yr milestone (sold ${saleDateStr})`;
+        }
+      }
+      if(s > best){ best = s; bestLabel = lbl; }
     }
-    cats.holdPeriod=Math.round(best);
-    if(bestLabel) details.push({cat:'Hold Period',label:bestLabel});
-    else{
-      const next=[...holdPeriods].sort((a,b)=>a-b).find(p=>p>yrs);
-      const mo=next?Math.round((next-yrs)*12):null;
-      details.push({cat:'Hold Period',label:mo?`${Math.round(yrs*10)/10} yrs since last sale — ${mo}mo until ${next}-yr milestone (sold ${saleDateStr})`:`${Math.round(yrs*10)/10} yrs since last sale (sold ${saleDateStr})`});
+    catScores.holdPeriod = best;
+    if(best > 0 && bestLabel){
+      details.push({cat:'Hold Period', label:bestLabel});
+    } else {
+      const next=[...holdPeriods].sort((a,b)=>a-b).find(m=>m>yrs);
+      const mo = next ? Math.round((next-yrs)*12) : null;
+      details.push({cat:'Hold Period', label:mo
+        ? `${yrs.toFixed(1)} yrs since last sale — ${mo}mo until ${next}-yr milestone (sold ${saleDateStr})`
+        : `${yrs.toFixed(1)} yrs since last sale (sold ${saleDateStr})`});
     }
-  } else {
-    details.push({cat:'Hold Period',label:'No sale date on record'});
+  }
+  // No saleDate → category excluded from score (not added to catScores)
+
+  // ── LOAN MATURITY ─────────────────────────────────────────────────────────────
+  // Source: Trepp maturity_date (primary) → remaining_term (sanity check) → Reonomy mortgage dates
+  // My adjustment 1: keep periods_past_maturity as an explicit Trepp override
+  // My adjustment 2: if remaining_term conflicts strongly with maturity_date, trust remaining_term
+  const periodsPast = t ? parseFloat(t.periods_past_maturity)||0 : 0;
+  const remainTerm  = t ? parseFloat(t.remaining_term)||null : null;
+  const tMatDate    = t ? parseD(t.maturity_date) : null;
+
+  // Determine effective maturity date for scoring:
+  // If Trepp says remaining_term < 6 months but maturity_date is >1yr away → trust remaining_term
+  let effectiveMat = tMatDate;
+  let matSource = 'Trepp';
+  let matOverrideNote = null;
+  if(tMatDate && remainTerm !== null){
+    const daysFromMat = daysUntil(tMatDate);
+    const daysFromRemain = remainTerm * 30.44;
+    if(daysFromMat > 365 && daysFromRemain < 180){
+      // remaining_term says <6mo but maturity_date says >1yr — servicer view wins
+      effectiveMat = new Date(Date.now() + daysFromRemain * 86400000);
+      matOverrideNote = `⬡ Trepp: Servicer remaining term (${remainTerm}mo) conflicts with maturity date — using remaining term`;
+    }
   }
 
-  // ── LOAN MATURITY ── (Trepp takes priority when available)
-  const STALE = -365;
-  let tMat = t ? parseD(t.maturity_date) : null;
-  // If Trepp has periods_past_maturity, it's already past due
-  const periodsPast = t ? parseFloat(t.periods_past_maturity)||0 : 0;
-  const remainTerm = t ? parseFloat(t.remaining_term)||null : null;
+  let matScore = 0;
+  if(t && (effectiveMat || periodsPast > 0)){
+    const lender = t.originator||t.source||'';
+    const bal = fmtMoney(t.current_balance);
+    const lStr = lender ? ` (${lender}${bal?', '+bal:''})` : bal?` (${bal})`:'';
 
-  if(tMat && daysUntil(tMat) > STALE){
-    const days=daysUntil(tMat);
-    const lender=t.originator||t.source||'';
-    const bal=fmtMoney(t.current_balance);
-    const lenderStr=lender?` (${lender}${bal?', '+bal:''})`:bal?` (${bal})`:'';
-    if(periodsPast>0){
-      cats.loanMaturity=Math.max(cats.loanMaturity,95);
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past maturity${lenderStr} — matured ${fmtDate(tMat)}`,trepp:true});
-    } else if(days<0){
-      cats.loanMaturity=Math.max(cats.loanMaturity,80);
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured ${Math.abs(Math.round(days))} days ago${lenderStr}`,trepp:true});
-    } else if(days<90){
-      cats.loanMaturity=Math.max(cats.loanMaturity,95);
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days)} days — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
-    } else if(days<180){
-      cats.loanMaturity=Math.max(cats.loanMaturity,85);
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days/30)} months — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
-    } else if(days<365){
-      cats.loanMaturity=Math.max(cats.loanMaturity,70);
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures within 1 year — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
-    } else if(days<730){
-      cats.loanMaturity=Math.max(cats.loanMaturity,45);
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ~${Math.round(days/365)} yrs — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
-    } else {
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Maturity ${fmtDate(tMat)}${lenderStr}`,trepp:true});
+    // Adjustment 1: periods_past_maturity is authoritative regardless of date math
+    if(periodsPast > 0){
+      matScore = 95;
+      details.push({cat:'Loan Maturity', label:`⬡ Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past original maturity${lStr} — matured ${fmtDate(tMatDate)}`, trepp:true});
+    } else if(effectiveMat){
+      const days = daysUntil(effectiveMat);
+      const ds = fmtDate(effectiveMat);
+      if(days < 0){
+        const dp = Math.abs(days);
+        if(dp <= 180){ matScore=90; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured ${Math.round(dp)} days ago${lStr} — ${ds}`,trepp:true}); }
+        else if(dp <= 365){ matScore=70; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured ${Math.round(dp/30)} months ago${lStr} — ${ds}`,trepp:true}); }
+        else{ matScore=30; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured >1yr ago${lStr} — ${ds}`,trepp:true}); }
+      } else if(days <= 90){  matScore=95; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days)} days — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 180){ matScore=85; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days/30)} months — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 365){ matScore=70; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures within 1 year — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 730){ matScore=45; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ~${Math.round(days/365)} yrs — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 1095){ matScore=20; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ~${Math.round(days/365)} yrs — ${ds}${lStr}`,trepp:true}); }
+      else{ details.push({cat:'Loan Maturity',label:`⬡ Trepp: Maturity ${ds}${lStr} (>3 yrs away)`,trepp:true}); }
     }
-    if(remainTerm!==null){
-      details.push({cat:'Loan Maturity',label:`⬡ Trepp: ${remainTerm} months remaining term`,trepp:true});
-    }
+    if(matOverrideNote) details.push({cat:'Loan Maturity', label:matOverrideNote, trepp:true});
+    if(remainTerm!==null && !matOverrideNote) details.push({cat:'Loan Maturity', label:`⬡ Trepp: ${remainTerm} months remaining term`, trepp:true});
+    if(matScore > 0) catScores.loanMaturity = matScore;
+
   } else if(!t){
-    // Fall back to Reonomy mortgage dates
+    // Fallback: Reonomy mortgage dates
+    const STALE = -365;
     const mats=[
-      {date:parseD(p.mortgage_maturity_date),amt:parseFloat(p.mortgage_amount)||0,lender:p.mortgage_standardized_name||p.mortgage_recorded_name,name:'Primary loan'},
-      {date:parseD(p.mortgage2_maturity_date),amt:parseFloat(p.mortgage2_amount)||0,lender:p.mortgage2_standardized_name||p.mortgage2_recorded_name,name:'Second loan'},
-    ].filter(m=>m.date&&daysUntil(m.date)>STALE);
+      {date:parseD(p.mortgage_maturity_date), amt:parseFloat(p.mortgage_amount)||0, lender:p.mortgage_standardized_name||p.mortgage_recorded_name, name:'Primary loan'},
+      {date:parseD(p.mortgage2_maturity_date), amt:parseFloat(p.mortgage2_amount)||0, lender:p.mortgage2_standardized_name||p.mortgage2_recorded_name, name:'Second loan'},
+    ].filter(m=>m.date && daysUntil(m.date)>STALE);
     const fut=mats.filter(m=>daysUntil(m.date)>0).sort((a,b)=>daysUntil(a.date)-daysUntil(b.date));
     const pas=mats.filter(m=>daysUntil(m.date)<=0).sort((a,b)=>daysUntil(b.date)-daysUntil(a.date));
     const act=fut.length?fut:pas;
-    if(act.length===0) details.push({cat:'Loan Maturity',label:'No active mortgage maturity date on record'});
-    for(const {date,name,lender,amt} of act.slice(0,1)){
-      const days=daysUntil(date);
-      const ls=lender?` (${lender}${amt?' — '+fmtMoney(amt):''})`:''
-      const ds=fmtDate(date); let s=0,lbl='';
-      if(days<0&&days>-180){s=80;lbl=`${name}${ls} matured ${Math.abs(Math.round(days))} days ago — ${ds}`;}
-      else if(days<0&&days>-365){s=60;lbl=`${name}${ls} matured ${Math.abs(Math.round(days/30))} months ago — ${ds}`;}
-      else if(days<90){s=95;lbl=`${name}${ls} matures in ${Math.round(days)} days — ${ds}`;}
-      else if(days<180){s=85;lbl=`${name}${ls} matures in ${Math.round(days/30)} months — ${ds}`;}
-      else if(days<365){s=70;lbl=`${name}${ls} matures within 1 year — ${ds}`;}
-      else if(days<730){s=45;lbl=`${name}${ls} matures in ~${Math.round(days/365)} yrs — ${ds}`;}
-      else if(days<1095){s=20;lbl=`${name}${ls} matures in ~${Math.round(days/365)} yrs — ${ds}`;}
-      if(s>cats.loanMaturity) cats.loanMaturity=s;
-      if(lbl) details.push({cat:'Loan Maturity',label:lbl});
+    if(act.length){
+      for(const {date,name,lender,amt} of act.slice(0,1)){
+        const days=daysUntil(date);
+        const ls=lender?` (${lender}${amt?' — '+fmtMoney(amt):''})`:'';
+        const ds=fmtDate(date); let s=0,lbl='';
+        if(days<0){
+          const dp=Math.abs(days);
+          if(dp<=180){s=90;lbl=`${name}${ls} matured ${Math.round(dp)} days ago — ${ds}`;}
+          else if(dp<=365){s=70;lbl=`${name}${ls} matured ${Math.round(dp/30)} months ago — ${ds}`;}
+          else{s=30;lbl=`${name}${ls} matured >1yr ago — ${ds}`;}
+        }
+        else if(days<=90){s=95;lbl=`${name}${ls} matures in ${Math.round(days)} days — ${ds}`;}
+        else if(days<=180){s=85;lbl=`${name}${ls} matures in ${Math.round(days/30)} months — ${ds}`;}
+        else if(days<=365){s=70;lbl=`${name}${ls} matures within 1 year — ${ds}`;}
+        else if(days<=730){s=45;lbl=`${name}${ls} matures in ~${Math.round(days/365)} yrs — ${ds}`;}
+        else if(days<=1095){s=20;lbl=`${name}${ls} matures in ~${Math.round(days/365)} yrs — ${ds}`;}
+        if(s>0) catScores.loanMaturity=s;
+        if(lbl) details.push({cat:'Loan Maturity',label:lbl});
+      }
     }
-  } else {
-    details.push({cat:'Loan Maturity',label:'No active Trepp loan maturity on record'});
+    // No valid date → category excluded
   }
+  // If Trepp present but no usable date → excluded too
 
-  // ── DISTRESS (additive: Reonomy preforeclosure + Trepp signals) ──
+  // ── DISTRESS ──────────────────────────────────────────────────────────────────
+  // MAX of all signals (Reonomy preforeclosure + Trepp). Never additive.
+  let dSignals = [];
+
   // Reonomy preforeclosure
   const prefoActive=p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True';
   if(prefoActive){
-    cats.distress=100;
-    const rd=fmtDate(p.preforeclosure_recording_date),pl=p.preforeclosure_plaintiff_1?` — Filed by: ${p.preforeclosure_plaintiff_1}`:'';
-    const dt=p.preforeclosure_doc_type?` (${p.preforeclosure_doc_type})`:'',dc=p.preforeclosure_deed_category?` — ${p.preforeclosure_deed_category}`:'';
-    details.push({cat:'Distress',label:`🚨 Active preforeclosure${dt}${dc}${rd?', recorded '+rd:''}${pl}`});
+    const rd=fmtDate(p.preforeclosure_recording_date), pl=p.preforeclosure_plaintiff_1?` — Filed by: ${p.preforeclosure_plaintiff_1}`:'';
+    const dt=p.preforeclosure_doc_type?` (${p.preforeclosure_doc_type})`:'', dc=p.preforeclosure_deed_category?` — ${p.preforeclosure_deed_category}`:'';
+    dSignals.push({s:100, label:`🚨 Active preforeclosure${dt}${dc}${rd?', recorded '+rd:''}${pl}`});
   }
   const auction=parseD(p.preforeclosure_auction_date);
   if(auction){
@@ -469,16 +512,16 @@ function scoreProperty(p){
     const tm=p.preforeclosure_auction_time?` at ${p.preforeclosure_auction_time}`:'';
     const loc=p.preforeclosure_street_address_of_auction_call?` — ${p.preforeclosure_street_address_of_auction_call}`:'';
     const tr=p.preforeclosure_trustee_name?` — Trustee: ${p.preforeclosure_trustee_name}`:'';
-    if(d>0&&d<180){cats.distress=Math.max(cats.distress,90);details.push({cat:'Distress',label:`Foreclosure auction in ${Math.round(d)} days (${fmtDate(auction)}${tm})${loc}${tr}`});}
-    else if(d>0){cats.distress=Math.max(cats.distress,50);details.push({cat:'Distress',label:`Foreclosure auction scheduled: ${fmtDate(auction)}${tm}${loc}`});}
-    else if(d<=0){cats.distress=Math.max(cats.distress,60);details.push({cat:'Distress',label:`Foreclosure auction date passed (${fmtDate(auction)})${tr}`});}
+    if(d>0&&d<180) dSignals.push({s:90, label:`Foreclosure auction in ${Math.round(d)} days (${fmtDate(auction)}${tm})${loc}${tr}`});
+    else if(d>0)   dSignals.push({s:50, label:`Foreclosure auction scheduled: ${fmtDate(auction)}${tm}${loc}`});
+    else           dSignals.push({s:60, label:`Foreclosure auction date passed (${fmtDate(auction)})${tr}`});
   }
-  if(p.preforeclosure_final_judgement_amount&&parseFloat(p.preforeclosure_final_judgement_amount)>0){
-    cats.distress=Math.max(cats.distress,70);
-    details.push({cat:'Distress',label:`Final judgement: ${fmtMoney(p.preforeclosure_final_judgement_amount)}${p.preforeclosure_plaintiff_1?' — Plaintiff: '+p.preforeclosure_plaintiff_1:''}`});
-  }
+  if(p.preforeclosure_final_judgement_amount && parseFloat(p.preforeclosure_final_judgement_amount)>0)
+    dSignals.push({s:70, label:`Final judgement: ${fmtMoney(p.preforeclosure_final_judgement_amount)}${p.preforeclosure_plaintiff_1?' — Plaintiff: '+p.preforeclosure_plaintiff_1:''}`});
+  if(p.preforeclosure_recording_date&&!prefoActive&&!auction&&!(parseFloat(p.preforeclosure_final_judgement_amount)>0))
+    dSignals.push({s:40, label:`Preforeclosure filing on record${p.preforeclosure_doc_type?' ('+p.preforeclosure_doc_type+')':''} — ${fmtDate(p.preforeclosure_recording_date)}`});
 
-  // Trepp distress signals (additive)
+  // Trepp distress signals
   if(t){
     const delinq=(t.delinquency_status||'').toLowerCase();
     const watchlist=(t.watchlist_status||'').toLowerCase();
@@ -491,110 +534,129 @@ function scoreProperty(p){
     const bankrupt=t.bankruptcy_date&&t.bankruptcy_date!=='-';
 
     if(specServ==='yes'){
-      cats.distress=Math.max(cats.distress,100);
       const reason=t.special_servicer_transfer_reason&&t.special_servicer_transfer_reason!=='-'?` — Reason: ${t.special_servicer_transfer_reason}`:'';
       const ss=t.special_servicer&&t.special_servicer!=='-'?` (${t.special_servicer})`:'';
-      details.push({cat:'Distress',label:`⬡ Trepp: 🚨 In special servicing${ss}${reason}`,trepp:true});
+      dSignals.push({s:100, label:`⬡ Trepp: 🚨 In special servicing${ss}${reason}`, trepp:true});
     }
-    if(reoDate){
-      cats.distress=Math.max(cats.distress,100);
-      details.push({cat:'Distress',label:`⬡ Trepp: REO — became real estate owned ${fmtDate(t.reo_date)}`,trepp:true});
-    }
-    if(bankrupt){
-      cats.distress=Math.max(cats.distress,95);
-      details.push({cat:'Distress',label:`⬡ Trepp: Bankruptcy filed ${fmtDate(t.bankruptcy_date)}`,trepp:true});
-    }
-    if(delinq&&delinq!=='current'&&delinq!=='-'){
-      cats.distress=Math.max(cats.distress,90);
-      details.push({cat:'Distress',label:`⬡ Trepp: Loan delinquent — status: ${t.delinquency_status}`,trepp:true});
-    }
-    if(timesDelinq>0){
-      cats.distress=Math.max(cats.distress,Math.min(75,50+timesDelinq*10));
-      details.push({cat:'Distress',label:`⬡ Trepp: Delinquent ${timesDelinq}x in last 12 months`,trepp:true});
-    }
+    if(reoDate)   dSignals.push({s:100, label:`⬡ Trepp: REO — became real estate owned ${fmtDate(t.reo_date)}`, trepp:true});
+    if(bankrupt)  dSignals.push({s:95,  label:`⬡ Trepp: Bankruptcy filed ${fmtDate(t.bankruptcy_date)}`, trepp:true});
+    if(delinq&&delinq!=='current'&&delinq!=='-')
+      dSignals.push({s:90, label:`⬡ Trepp: Loan delinquent — status: ${t.delinquency_status}`, trepp:true});
+    if(timesDelinq>0)
+      dSignals.push({s:Math.min(75,50+timesDelinq*10), label:`⬡ Trepp: Delinquent ${timesDelinq}x in last 12 months`, trepp:true});
     if(watchlist==='yes'){
-      cats.distress=Math.max(cats.distress,65);
       const wd=t.watchlist_date&&t.watchlist_date!=='-'?` since ${fmtDate(t.watchlist_date)}`:'';
-      details.push({cat:'Distress',label:`⬡ Trepp: On watchlist${wd}`,trepp:true});
+      dSignals.push({s:65, label:`⬡ Trepp: On watchlist${wd}`, trepp:true});
     }
     if(dscr!==null&&dscr>0){
-      if(dscr<1.0){cats.distress=Math.max(cats.distress,80);details.push({cat:'Distress',label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — loan not covering debt service (below 1.0)`,trepp:true});}
-      else if(dscr<1.25){cats.distress=Math.max(cats.distress,50);details.push({cat:'Distress',label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — stressed (below 1.25)`,trepp:true});}
-      else{details.push({cat:'Distress',label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — healthy`,trepp:true});}
+      if(dscr<1.0)        dSignals.push({s:80, label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — loan not covering debt service`, trepp:true});
+      else if(dscr<1.25)  dSignals.push({s:50, label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — stressed (below 1.25)`, trepp:true});
+      else                dSignals.push({s:0,  label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — healthy`, trepp:true});
     }
     if(ltv!==null&&ltv>0){
-      if(ltv>90){cats.distress=Math.max(cats.distress,60);details.push({cat:'Distress',label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — critically overleveraged`,trepp:true});}
-      else if(ltv>80){cats.distress=Math.max(cats.distress,35);details.push({cat:'Distress',label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — overleveraged`,trepp:true});}
-      else{details.push({cat:'Distress',label:`⬡ Trepp: LTV ${ltv.toFixed(1)}%`,trepp:true});}
+      if(ltv>90)       dSignals.push({s:60, label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — critically overleveraged`, trepp:true});
+      else if(ltv>80)  dSignals.push({s:35, label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — overleveraged`, trepp:true});
+      else             dSignals.push({s:0,  label:`⬡ Trepp: LTV ${ltv.toFixed(1)}%`, trepp:true});
     }
     if(modLoan==='yes'){
-      cats.distress=Math.max(cats.distress,40);
       const mt=t.modification_type_servicer&&t.modification_type_servicer!=='-'?` (${t.modification_type_servicer})`:'';
-      details.push({cat:'Distress',label:`⬡ Trepp: Loan has been modified${mt}`,trepp:true});
+      dSignals.push({s:40, label:`⬡ Trepp: Loan has been modified${mt}`, trepp:true});
     }
-    if(periodsPast>0&&!tMat){
-      cats.distress=Math.max(cats.distress,85);
-      details.push({cat:'Distress',label:`⬡ Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past maturity`,trepp:true});
-    }
-    if(!prefoActive&&!auction&&!p.preforeclosure_final_judgement_amount&&specServ!=='yes'&&delinq==='current'&&watchlist!=='yes'){
-      details.push({cat:'Distress',label:`⬡ Trepp: Loan current — no distress signals`,trepp:true});
-    }
-  } else {
-    if(!prefoActive&&!auction&&!p.preforeclosure_final_judgement_amount&&!p.preforeclosure_recording_date){
-      details.push({cat:'Distress',label:'No distress signals on record (no Trepp data for this property)'});
-    }
-    if(p.preforeclosure_recording_date&&!prefoActive&&!auction&&!(p.preforeclosure_final_judgement_amount>0)){
-      cats.distress=Math.max(cats.distress,40);
-      details.push({cat:'Distress',label:`Preforeclosure filing on record${p.preforeclosure_doc_type?' ('+p.preforeclosure_doc_type+')':''} — ${fmtDate(p.preforeclosure_recording_date)}`});
+    if(periodsPast>0 && !effectiveMat)
+      dSignals.push({s:85, label:`⬡ Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past maturity`, trepp:true});
+
+    // Affirmative "no distress" note only if truly clean
+    if(dSignals.length===0)
+      dSignals.push({s:0, label:`⬡ Trepp: Loan current — no distress signals`, trepp:true});
+  } else if(dSignals.length===0){
+    dSignals.push({s:0, label:'No distress signals on record (no Trepp data)'});
+  }
+
+  // Score = MAX of all signals; push all signal labels as details
+  const maxDist = Math.max(...dSignals.map(d=>d.s));
+  dSignals.forEach(d=>details.push({cat:'Distress', label:d.label, trepp:!!d.trepp}));
+  if(maxDist > 0) catScores.distress = maxDist;
+
+  // ── MARKET SIGNALS ────────────────────────────────────────────────────────────
+  // Score = MAX of all sub-signal scores
+  let mSignals = [];
+
+  // Occupancy / Vacancy (Trepp priority)
+  const occ = t ? parseFloat(t.occupancy_pct)||null : null;
+  const vacancy = parseFloat(p.vacancy)||null;
+  if(occ!==null && !isNaN(occ)){
+    const vEq=100-occ;
+    if(vEq>20)      mSignals.push({s:75, label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — high vacancy (${vEq.toFixed(1)}%)`, trepp:true});
+    else if(vEq>10) mSignals.push({s:45, label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — elevated vacancy`, trepp:true});
+    else            mSignals.push({s:0,  label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — healthy`, trepp:true});
+  } else if(vacancy!==null && !isNaN(vacancy)){
+    if(vacancy>20)      mSignals.push({s:75, label:`CoStar vacancy: ${vacancy.toFixed(1)}% — high`});
+    else if(vacancy>10) mSignals.push({s:45, label:`CoStar vacancy: ${vacancy.toFixed(1)}% — elevated`});
+    else                mSignals.push({s:0,  label:`CoStar vacancy: ${vacancy.toFixed(1)}% — healthy`});
+  }
+
+  // Cap rate
+  const capRate = t ? parseFloat(t.most_recent_implied_cap_rate_noi)||null : parseFloat(p.actual_cap_rate)||null;
+  if(capRate!==null && !isNaN(capRate) && capRate>0){
+    const src=t?'⬡ Trepp':'CoStar';
+    if(capRate<4.5) mSignals.push({s:35, label:`${src}: Cap rate ${capRate.toFixed(2)}% — compressed`, trepp:!!t});
+    else            mSignals.push({s:0,  label:`${src}: Cap rate ${capRate.toFixed(2)}%`, trepp:!!t});
+  }
+
+  // Debt yield (Trepp only)
+  if(t && t.debt_yield_noi){
+    const dy=parseFloat(t.debt_yield_noi);
+    if(!isNaN(dy) && dy>0){
+      if(dy<6) mSignals.push({s:40, label:`⬡ Trepp: Debt yield ${dy.toFixed(2)}% — compressed`, trepp:true});
+      else     mSignals.push({s:0,  label:`⬡ Trepp: Debt yield ${dy.toFixed(2)}%`, trepp:true});
     }
   }
 
-  // ── MARKET SIGNALS ──
-  // Use Trepp occupancy if available, else CoStar vacancy
-  const occ=t?parseFloat(t.occupancy_pct)||null:null;
-  const vacancy=parseFloat(p.vacancy)||null;
-  if(occ!==null){
-    const vEq=100-occ;
-    if(vEq>20){cats.marketSignals=Math.max(cats.marketSignals,70);details.push({cat:'Market',label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% (vacancy ${vEq.toFixed(1)}%) — high vacancy`});}
-    else if(vEq>10){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}%`,trepp:true});}
-    else{details.push({cat:'Market',label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — healthy`,trepp:true});}
-  } else if(vacancy!==null){
-    if(vacancy>20){cats.marketSignals=Math.max(cats.marketSignals,70);details.push({cat:'Market',label:`CoStar vacancy: ${vacancy.toFixed(1)}% — high`});}
-    else if(vacancy>10){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`CoStar vacancy: ${vacancy.toFixed(1)}% — elevated`});}
-    else{details.push({cat:'Market',label:`CoStar vacancy: ${vacancy.toFixed(1)}%`});}
-  }
-  // Cap rate
-  const capRate=t?parseFloat(t.most_recent_implied_cap_rate_noi)||null:parseFloat(p.actual_cap_rate)||null;
-  if(capRate!==null&&capRate>0){
-    const src=t?'⬡ Trepp':'CoStar';
-    if(capRate<4.5){cats.marketSignals=Math.max(cats.marketSignals,35);details.push({cat:'Market',label:`${src}: Implied cap rate ${capRate.toFixed(2)}% — compressed`,trepp:!!t});}
-    else{details.push({cat:'Market',label:`${src}: Cap rate ${capRate.toFixed(2)}%`,trepp:!!t});}
-  }
-  // Trepp debt yield
-  if(t&&t.debt_yield_noi){
-    const dy=parseFloat(t.debt_yield_noi);
-    if(!isNaN(dy)&&dy>0&&dy<6){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`⬡ Trepp: Debt yield ${dy.toFixed(2)}% — compressed`,trepp:true});}
-  }
-  // Age/condition
-  const yrB=parseFloat(p.year_built||t?.year_built);
+  // Building age
+  const yrB = parseFloat(p.year_built||t?.year_built);
   if(!isNaN(yrB)){
-    const age=new Date().getFullYear()-yrB;
-    if(age>60&&!p.year_renovated&&!t?.renovation_year){cats.marketSignals=Math.max(cats.marketSignals,25);details.push({cat:'Market',label:`Aging building: built ${Math.round(yrB)} (${age} yrs), no renovation on record`});}
-    else if(p.year_renovated){details.push({cat:'Market',label:`Built ${Math.round(yrB)}, renovated ${Math.round(p.year_renovated)}`});}
+    const age = new Date().getFullYear()-Math.round(yrB);
+    const lastReno = parseFloat(p.year_renovated||t?.renovation_year);
+    const yearsAgoReno = !isNaN(lastReno) ? new Date().getFullYear()-Math.round(lastReno) : null;
+    const noRecentReno = yearsAgoReno===null || yearsAgoReno>10;
+    if(age>60 && noRecentReno) mSignals.push({s:30, label:`Aging building: built ${Math.round(yrB)} (${age} yrs), no renovation in last 10 yrs`});
+    else if(!isNaN(lastReno))  mSignals.push({s:0,  label:`Built ${Math.round(yrB)}, renovated ${Math.round(lastReno)}`});
   }
+
+  const maxMkt = Math.max(...mSignals.map(m=>m.s), 0);
+  mSignals.forEach(m=>details.push({cat:'Market', label:m.label, trepp:!!m.trepp}));
+  if(maxMkt > 0) catScores.marketSignals = maxMkt;
+
   // Data source summary
   const sources=[];
   if(p._hasCostar) sources.push(`CoStar (${p._matchMethod})`);
   if(t) sources.push('Trepp');
-  details.push({cat:'Market',label:sources.length?`Data sources: ${sources.join(', ')}`:'Data source: Reonomy only'});
+  details.push({cat:'Market', label:sources.length?`Data sources: ${sources.join(', ')}`:'Data source: Reonomy only'});
 
-  // ── WEIGHTED FINAL ──
-  const w=getWeights();
-  const wTotal=w.holdPeriod+w.loanMaturity+w.distress+w.marketSignals;
-  let score=0;
-  if(wTotal>0) score=Math.round((cats.holdPeriod*w.holdPeriod+cats.loanMaturity*w.loanMaturity+cats.distress*w.distress+cats.marketSignals*w.marketSignals)/wTotal);
-  const tier=score>=70?'hot':score>=50?'warm':score>=30?'watch':'cold';
-  return {score,tier,details,cats};
+  // ── WEIGHTED FINAL with missing-data renormalization ──────────────────────────
+  const w = getWeights();
+  const weightMap = {holdPeriod:w.holdPeriod, loanMaturity:w.loanMaturity, distress:w.distress, marketSignals:w.marketSignals};
+  let weightedSum = 0, wAvailable = 0;
+  for(const [cat, score] of Object.entries(catScores)){
+    weightedSum += score * weightMap[cat];
+    wAvailable  += weightMap[cat];
+  }
+  const finalScore = wAvailable > 0 ? Math.round(weightedSum / wAvailable) : 0;
+  const tier = finalScore>=70?'hot':finalScore>=50?'warm':finalScore>=30?'watch':'cold';
+
+  // Build cats object for display (use 0 for missing categories)
+  const cats = {
+    holdPeriod:    catScores.holdPeriod    ?? 0,
+    loanMaturity:  catScores.loanMaturity  ?? 0,
+    distress:      catScores.distress      ?? 0,
+    marketSignals: catScores.marketSignals ?? 0,
+  };
+
+  // Flag if data-scarce
+  if(wAvailable < w.holdPeriod + w.loanMaturity + w.distress + w.marketSignals)
+    details.push({cat:'Score', label:`Note: score renormalized — ${Object.keys(catScores).length} of 4 categories have data`});
+
+  return {score:finalScore, tier, details, cats};
 }
 
 // ─── DATA FETCHING ────────────────────────────────────────────────────────────
