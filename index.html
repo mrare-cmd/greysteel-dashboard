@@ -694,23 +694,24 @@ async function loadData(){
   const costar = await fetchAll('costar2', null);
 
   // Match and merge -- ALL Reonomy properties are included
-  // Step 1: coordinate match (within ~50 meters)
-  // Step 2: fallback to normalized address match
+  // Step 1: normalized address match (primary -- most precise)
+  // Step 2: coordinate match within 20 meters (tight fallback for address format differences)
   let matchCount = 0;
   let coordMatchCount = 0;
   let addrMatchCount = 0;
 
-  // Build CoStar spatial index -- bucket by rounded lat/lng for fast lookup
-  const costarByCoord = {};
+  // Build CoStar lookup indexes
   const costarByAddr = {};
+  const costarByCoord = {};
   (costar||[]).forEach(c=>{
-    // Address index
+    // Address index -- primary
     const ak = normalizeAddr(c.property_address);
     if(ak) costarByAddr[ak] = c;
-    // Coordinate index -- bucket to ~0.01 degree grid (~1km)
+    // Coordinate index -- tight fallback (20m radius needs ~0.001 degree bucket)
     const lat = parseFloat(c.latitude), lng = parseFloat(c.longitude);
     if(!isNaN(lat) && !isNaN(lng)){
-      const bucket = `${Math.round(lat*100)}_${Math.round(lng*100)}`;
+      // Use finer bucket (1000x instead of 100x) for tighter matching
+      const bucket = `${Math.round(lat*1000)}_${Math.round(lng*1000)}`;
       if(!costarByCoord[bucket]) costarByCoord[bucket] = [];
       costarByCoord[bucket].push({...c, _lat:lat, _lng:lng});
     }
@@ -721,48 +722,53 @@ async function loadData(){
     let costarMatch = null;
     let matchMethod = null;
 
-    // Try coordinate match first (check nearby buckets)
-    if(!isNaN(pLat) && !isNaN(pLng)){
-      const bLat = Math.round(pLat*100), bLng = Math.round(pLng*100);
+    // Step 1: Address match first (most reliable)
+    const ak = normalizeAddr(p.address_line_1||'');
+    if(ak && costarByAddr[ak]){
+      costarMatch = costarByAddr[ak];
+      matchMethod = 'addr';
+    }
+
+    // Step 2: Coordinate fallback -- only if no address match, tight 20m radius
+    if(!costarMatch && !isNaN(pLat) && !isNaN(pLng)){
+      const bLat = Math.round(pLat*1000), bLng = Math.round(pLng*1000);
       let bestDist = Infinity;
-      // Check 3x3 grid of buckets to handle edge cases
+      // Check 3x3 grid of fine buckets
       for(let dlat=-1; dlat<=1; dlat++){
         for(let dlng=-1; dlng<=1; dlng++){
           const bucket = `${bLat+dlat}_${bLng+dlng}`;
           const candidates = costarByCoord[bucket] || [];
           for(const c of candidates){
             const dist = haversineMeters(pLat, pLng, c._lat, c._lng);
-            if(dist < 75 && dist < bestDist){ // within 75 meters
+            if(dist < 20 && dist < bestDist){ // within 20 meters only
               bestDist = dist;
               costarMatch = c;
-              matchMethod = 'coord';
+              matchMethod = `coord(${Math.round(dist)}m)`;
             }
           }
         }
       }
     }
 
-    // Fallback: normalized address match
-    if(!costarMatch){
-      const ak = normalizeAddr(p.address_line_1||'');
-      if(ak && costarByAddr[ak]){
-        costarMatch = costarByAddr[ak];
-        matchMethod = 'addr';
-      }
-    }
-
     if(costarMatch){
       matchCount++;
-      if(matchMethod==='coord') coordMatchCount++;
-      else addrMatchCount++;
+      if(matchMethod==='addr') addrMatchCount++;
+      else coordMatchCount++;
     }
 
     const merged = costarMatch ? {
       ...p,
+      // CoStar is more reliable for sale price/date -- use it when available
+      sale_amount: costarMatch.sale_price || p.sale_amount,
+      sale_recorded_date: costarMatch.sale_date || p.sale_recorded_date,
+      sales_price_per_sf: costarMatch.price_per_sf || p.sales_price_per_sf,
+      price_per_unit: costarMatch.price_per_unit || p.price_per_unit,
+      // Keep original Reonomy sale for reference
+      _reonomy_sale_amount: p.sale_amount,
+      // CoStar-only augmentation fields
       vacancy: costarMatch.vacancy || p.vacancy,
       actual_cap_rate: costarMatch.actual_cap_rate || p.actual_cap_rate,
       pro_forma_cap_rate: costarMatch.pro_forma_cap_rate,
-      price_per_unit: costarMatch.price_per_unit,
       building_class: costarMatch.building_class,
       submarket_name: costarMatch.submarket_name,
       buyer_true_company: costarMatch.buyer_true_company,
@@ -776,9 +782,9 @@ async function loadData(){
     return {...merged, _score:score, _tier:tier, _details:details, _cats:cats};
   });
 
-  console.log(`Loaded ${allData.length} properties | CoStar matches: ${matchCount} (${coordMatchCount} by coords, ${addrMatchCount} by address)`);
+  console.log(`Loaded ${allData.length} properties | CoStar matches: ${matchCount} (${addrMatchCount} by address, ${coordMatchCount} by coords)`);
   document.getElementById('matchInfo').textContent =
-    `${allData.length.toLocaleString()} properties · ${matchCount} CoStar matches (${coordMatchCount} coord, ${addrMatchCount} addr)`;
+    `${allData.length.toLocaleString()} properties · ${matchCount} CoStar matches (${addrMatchCount} addr, ${coordMatchCount} coord)`;
 
   setLoading(false);
   document.getElementById('loadingList').style.display='none';
@@ -1133,12 +1139,15 @@ function buildDetailGrid(p){
     ['Owner Mailing', p.reported_mailing_address_full, true],
   ]);
 
-  const saleSection = section('Sale History', [
+  const saleSection = section(p._hasCostar ? 'Sale History (CoStar)' : 'Sale History', [
     ['Sale Price', fmtMoney(p.sale_amount)],
     ['Sale Date', fmtDate(p.sale_recorded_date)],
     ['Price/SF', p.sales_price_per_sf?`$${parseFloat(p.sales_price_per_sf).toFixed(2)}`:null],
-    ['Prior Sale', fmtMoney(p.sale2_amount)],
-    ['Prior Sale Date', fmtDate(p.sale2_recorded_date)],
+    ['Price/Unit', fmtMoney(p.price_per_unit)],
+    p._hasCostar ? null : ['Prior Sale', fmtMoney(p.sale2_amount)],
+    p._hasCostar ? null : ['Prior Sale Date', fmtDate(p.sale2_recorded_date)],
+    // Always show Reonomy sale as secondary reference if CoStar overrode it
+    p._hasCostar && p._costar?.sale_price ? ['Reonomy Sale (ref)', fmtMoney(p._reonomy_sale_amount)] : null,
   ]);
 
   const mortSection = section('Mortgage', [
