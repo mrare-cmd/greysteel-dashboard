@@ -747,11 +747,13 @@ async function loadData(){
   // ── Build Trepp address index ──
   const treppByAddr={};
   (trepps||[]).forEach(t=>{
-    const ak=normalizeAddr((t.address||'')+(t.city?' '+t.city:''));
-    if(ak) treppByAddr[ak]=t;
-    // Also index by address only
-    const ak2=normalizeAddr(t.address||'');
-    if(ak2&&!treppByAddr[ak2]) treppByAddr[ak2]=t;
+    const fullAddr=normalizeAddr((t.address||'')+(t.city?' '+t.city:''));
+    if(fullAddr) treppByAddr[fullAddr]=t;
+    const addrOnly=normalizeAddr(t.address||'');
+    if(addrOnly&&!treppByAddr[addrOnly]) treppByAddr[addrOnly]=t;
+    // Also index by property name as last resort
+    const nameKey=normalizeAddr(t.property_name||'');
+    if(nameKey&&!treppByAddr[nameKey]) treppByAddr[nameKey]=t;
   });
 
   // ── Build CoStar address + coord indexes ──
@@ -826,10 +828,10 @@ async function loadData(){
   treppOnly.forEach(t=>{
     const pseudo={
       id:`trepp_${t.id}`,
-      address_line_1: t.address,
+      address_line_1: t.address || t.property_name,
       address_city: t.city,
       address_state: t.state,
-      address_full: [t.address,t.city,t.state].filter(Boolean).join(', '),
+      address_full: [t.address||t.property_name, t.city, t.state].filter(Boolean).join(', '),
       property_type: t.normalized_property_type||t.property_type,
       property_subtype: t.trepp_subtype,
       year_built: t.year_built,
@@ -961,7 +963,7 @@ function renderList(){
 }
 
 function propCard(p){
-  const addr=p.address_line_1||p.address||'Unknown Address';
+  const addr=p.address_line_1||p.address||p._trepp?.address||p._trepp?.property_name||'Unknown Address';
   const city=[p.address_city||p.city,p.address_state||p.state].filter(Boolean).join(', ');
   const subtype=p.property_subtype||p._trepp?.trepp_subtype||'';
   const units=p.total_units||p._trepp?.number_of_units||null;
@@ -1057,7 +1059,7 @@ function renderMap(){
     const tierColor={hot:'#d93025',warm:'#fa7b17',watch:'#f29900',cold:'#188038'}[p._tier];
     const borderColor=p._source==='trepp'?'#7c3aed':'rgba(255,255,255,.8)';
     const icon=L.divIcon({className:'',html:`<div class="map-dot${sel?' selected':''}" style="width:${sz}px;height:${sz}px;background:${tierColor};border-color:rgba(255,255,255,.8)"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
-    const addr=p.address_line_1||p.address||'';
+    const addr=p.address_line_1||p.address||p._trepp?.address||p._trepp?.property_name||'';
     const m=L.marker([lat,lng],{icon});
     const srcTag=p._trepp?'Trepp':'';
     m.bindTooltip(`<b>${addr}</b><br>Score: ${p._score} · ${p._tier}${srcTag?' · '+srcTag:''}`,{direction:'top',offset:[0,-4]});
@@ -1085,7 +1087,7 @@ function selectProperty(id, fromMap=false){
 }
 
 function openDrawer(p){
-  const addr=p.address_line_1||p.address||'Unknown';
+  const addr=p.address_line_1||p.address||p._trepp?.address||p._trepp?.property_name||'Unknown';
   const city=[p.address_city||p.city,p.address_state||p.state].filter(Boolean).join(', ');
   const tierLabel={hot:'Hot',warm:'Warm',watch:'Watch',cold:'Cold'}[p._tier];
   const catLabels={holdPeriod:'Hold',loanMaturity:'Maturity',distress:'Distress',marketSignals:'Market'};
