@@ -121,7 +121,7 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(-
 @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.8}}
 
 /* DETAIL DRAWER */
-.detail-drawer{position:fixed;right:0;top:0;bottom:0;width:480px;background:var(--white);box-shadow:-4px 0 16px rgba(60,64,67,.15);z-index:600;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;overflow:hidden;}
+.detail-drawer{position:fixed;right:0;top:0;bottom:0;width:480px;background:var(--white);box-shadow:-4px 0 16px rgba(60,64,67,.15);z-index:600;transform:translateX(100%);transition:transform .35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden;}
 .detail-drawer.open{transform:translateX(0)}
 #drawerContent{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
 .dd-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;flex-shrink:0;}
@@ -149,7 +149,7 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(-
 .sb-reasons li{font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:6px;padding:3px 0;}
 .sb-reasons li::before{content:'•';color:var(--text3);flex-shrink:0}
 .sb-reasons li.trepp-signal{color:var(--purple)}
-.sb-reasons li.trepp-signal::before{content:'⬡';color:var(--purple)}
+.sb-reasons li.trepp-signal::before{content:'T';font-size:9px;font-weight:700;color:var(--purple);background:var(--purple-light);border-radius:2px;padding:0 2px;line-height:1.4;}
 /* Detail grid */
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .dg-section-head{grid-column:1/-1;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-top:4px;}
@@ -216,15 +216,15 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(-
 <div class="toolbar">
   <div class="tier-filter">
     <button class="tier-btn active" data-tier="all" onclick="setTier('all')">All</button>
-    <button class="tier-btn" data-tier="hot" onclick="setTier('hot')">🔴 Hot</button>
-    <button class="tier-btn" data-tier="warm" onclick="setTier('warm')">🟠 Warm</button>
-    <button class="tier-btn" data-tier="watch" onclick="setTier('watch')">🟡 Watch</button>
-    <button class="tier-btn" data-tier="cold" onclick="setTier('cold')">🟢 Cold</button>
+    <button class="tier-btn" data-tier="hot" onclick="setTier('hot')"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d93025;margin-right:5px;vertical-align:middle"></span>Hot</button>
+    <button class="tier-btn" data-tier="warm" onclick="setTier('warm')"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fa7b17;margin-right:5px;vertical-align:middle"></span>Warm</button>
+    <button class="tier-btn" data-tier="watch" onclick="setTier('watch')"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f29900;margin-right:5px;vertical-align:middle"></span>Watch</button>
+    <button class="tier-btn" data-tier="cold" onclick="setTier('cold')"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#188038;margin-right:5px;vertical-align:middle"></span>Cold</button>
   </div>
   <div class="toolbar-sep"></div>
   <div class="src-filter">
     <button class="src-btn active" data-src="all" onclick="setSrc('all')">All Sources</button>
-    <button class="src-btn" data-src="trepp" onclick="setSrc('trepp')">⬡ Has Trepp</button>
+    <button class="src-btn" data-src="trepp" onclick="setSrc('trepp')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Has Trepp</button>
     <button class="src-btn" data-src="trepp-only" onclick="setSrc('trepp-only')">Trepp Only</button>
   </div>
   <div class="toolbar-sep"></div>
@@ -254,23 +254,23 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(-
 <div class="weights-panel" id="weightsPanel">
   <div class="wp-header">
     <span class="wp-title">Scoring Weights & Configuration</span>
-    <button onclick="toggleWeights()" style="color:var(--text2);padding:4px">✕</button>
+    <button onclick="toggleWeights()" style="color:var(--text2);padding:4px;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </div>
   <div class="wp-body">
     <div class="weight-row">
-      <div class="weight-label"><span class="wl-name">🏠 Hold Period</span><span class="wl-val" id="wHoldVal">3</span></div>
+      <div class="weight-label"><span class="wl-name" style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 3l9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Hold Period</span><span class="wl-val" id="wHoldVal">3</span></div>
       <input type="range" class="weight-slider" id="wHold" min="0" max="5" value="3" step="1" oninput="document.getElementById('wHoldVal').textContent=this.value">
     </div>
     <div class="weight-row">
-      <div class="weight-label"><span class="wl-name">📅 Loan Maturity</span><span class="wl-val" id="wMatVal">4</span></div>
+      <div class="weight-label"><span class="wl-name" style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Loan Maturity</span><span class="wl-val" id="wMatVal">4</span></div>
       <input type="range" class="weight-slider" id="wMat" min="0" max="5" value="4" step="1" oninput="document.getElementById('wMatVal').textContent=this.value">
     </div>
     <div class="weight-row">
-      <div class="weight-label"><span class="wl-name">⚠️ Distress Signals</span><span class="wl-val" id="wDistVal">5</span></div>
+      <div class="weight-label"><span class="wl-name" style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Distress Signals</span><span class="wl-val" id="wDistVal">5</span></div>
       <input type="range" class="weight-slider" id="wDist" min="0" max="5" value="5" step="1" oninput="document.getElementById('wDistVal').textContent=this.value">
     </div>
     <div class="weight-row">
-      <div class="weight-label"><span class="wl-name">📊 Market Signals</span><span class="wl-val" id="wMktVal">2</span></div>
+      <div class="weight-label"><span class="wl-name" style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Market Signals</span><span class="wl-val" id="wMktVal">2</span></div>
       <input type="range" class="weight-slider" id="wMkt" min="0" max="5" value="2" step="1" oninput="document.getElementById('wMktVal').textContent=this.value">
     </div>
     <div class="weight-row">
@@ -323,6 +323,16 @@ let allData = [], filtered = [], selectedId = null;
 let activeTier = 'all', activeSrc = 'all', searchQ = '';
 let map, markersLayer;
 let holdPeriods = [3,5,7,10];
+
+
+// ─── SVG ICON HELPERS ────────────────────────────────────────────────────────
+const IC = {
+  trepp:    `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;display:inline-block;margin-right:3px;flex-shrink:0"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`,
+  alert:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;display:inline-block;margin-right:3px;flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  phone:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;display:inline-block;margin-right:4px"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.43 2.18 2 2 0 012.42.18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.39 1.85.65 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  email:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;display:inline-block;margin-right:4px"><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M2 7l10 7 10-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  building: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px"><rect x="3" y="3" width="18" height="18" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M9 21V9h6v12M3 9h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+};
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 function parseD(v){ if(!v||v==='-') return null; const d=new Date(v); return isNaN(d)?null:d; }
@@ -426,7 +436,7 @@ function scoreProperty(p){
     if(daysFromMat > 365 && daysFromRemain < 180){
       // remaining_term says <6mo but maturity_date says >1yr — servicer view wins
       effectiveMat = new Date(Date.now() + daysFromRemain * 86400000);
-      matOverrideNote = `⬡ Trepp: Servicer remaining term (${remainTerm}mo) conflicts with maturity date — using remaining term`;
+      matOverrideNote = `${IC.trepp}Trepp: Servicer remaining term (${remainTerm}mo) conflicts with maturity date — using remaining term`;
     }
   }
 
@@ -439,24 +449,24 @@ function scoreProperty(p){
     // Adjustment 1: periods_past_maturity is authoritative regardless of date math
     if(periodsPast > 0){
       matScore = 95;
-      details.push({cat:'Loan Maturity', label:`⬡ Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past original maturity${lStr} — matured ${fmtDate(tMatDate)}`, trepp:true});
+      details.push({cat:'Loan Maturity', label:`${IC.trepp}Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past original maturity${lStr} — matured ${fmtDate(tMatDate)}`, trepp:true});
     } else if(effectiveMat){
       const days = daysUntil(effectiveMat);
       const ds = fmtDate(effectiveMat);
       if(days < 0){
         const dp = Math.abs(days);
-        if(dp <= 180){ matScore=90; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured ${Math.round(dp)} days ago${lStr} — ${ds}`,trepp:true}); }
-        else if(dp <= 365){ matScore=70; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured ${Math.round(dp/30)} months ago${lStr} — ${ds}`,trepp:true}); }
-        else{ matScore=30; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured >1yr ago${lStr} — ${ds}`,trepp:true}); }
-      } else if(days <= 90){  matScore=95; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days)} days — ${ds}${lStr}`,trepp:true}); }
-      else if(days <= 180){ matScore=85; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days/30)} months — ${ds}${lStr}`,trepp:true}); }
-      else if(days <= 365){ matScore=70; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures within 1 year — ${ds}${lStr}`,trepp:true}); }
-      else if(days <= 730){ matScore=45; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ~${Math.round(days/365)} yrs — ${ds}${lStr}`,trepp:true}); }
-      else if(days <= 1095){ matScore=20; details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ~${Math.round(days/365)} yrs — ${ds}${lStr}`,trepp:true}); }
-      else{ details.push({cat:'Loan Maturity',label:`⬡ Trepp: Maturity ${ds}${lStr} (>3 yrs away)`,trepp:true}); }
+        if(dp <= 180){ matScore=90; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Loan matured ${Math.round(dp)} days ago${lStr} — ${ds}`,trepp:true}); }
+        else if(dp <= 365){ matScore=70; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Loan matured ${Math.round(dp/30)} months ago${lStr} — ${ds}`,trepp:true}); }
+        else{ matScore=30; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Loan matured >1yr ago${lStr} — ${ds}`,trepp:true}); }
+      } else if(days <= 90){  matScore=95; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Matures in ${Math.round(days)} days — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 180){ matScore=85; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Matures in ${Math.round(days/30)} months — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 365){ matScore=70; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Matures within 1 year — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 730){ matScore=45; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Matures in ~${Math.round(days/365)} yrs — ${ds}${lStr}`,trepp:true}); }
+      else if(days <= 1095){ matScore=20; details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Matures in ~${Math.round(days/365)} yrs — ${ds}${lStr}`,trepp:true}); }
+      else{ details.push({cat:'Loan Maturity',label:`${IC.trepp}Trepp: Maturity ${ds}${lStr} (>3 yrs away)`,trepp:true}); }
     }
     if(matOverrideNote) details.push({cat:'Loan Maturity', label:matOverrideNote, trepp:true});
-    if(remainTerm!==null && !matOverrideNote) details.push({cat:'Loan Maturity', label:`⬡ Trepp: ${remainTerm} months remaining term`, trepp:true});
+    if(remainTerm!==null && !matOverrideNote) details.push({cat:'Loan Maturity', label:`${IC.trepp}Trepp: ${remainTerm} months remaining term`, trepp:true});
     if(matScore > 0) catScores.loanMaturity = matScore;
 
   } else if(!t){
@@ -502,7 +512,7 @@ function scoreProperty(p){
   if(prefoActive){
     const rd=fmtDate(p.preforeclosure_recording_date), pl=p.preforeclosure_plaintiff_1?` — Filed by: ${p.preforeclosure_plaintiff_1}`:'';
     const dt=p.preforeclosure_doc_type?` (${p.preforeclosure_doc_type})`:'', dc=p.preforeclosure_deed_category?` — ${p.preforeclosure_deed_category}`:'';
-    dSignals.push({s:100, label:`🚨 Active preforeclosure${dt}${dc}${rd?', recorded '+rd:''}${pl}`});
+    dSignals.push({s:100, label:`${IC.alert}Active preforeclosure${dt}${dc}${rd?', recorded '+rd:''}${pl}`});
   }
   const auction=parseD(p.preforeclosure_auction_date);
   if(auction){
@@ -534,38 +544,38 @@ function scoreProperty(p){
     if(specServ==='yes'){
       const reason=t.special_servicer_transfer_reason&&t.special_servicer_transfer_reason!=='-'?` — Reason: ${t.special_servicer_transfer_reason}`:'';
       const ss=t.special_servicer&&t.special_servicer!=='-'?` (${t.special_servicer})`:'';
-      dSignals.push({s:100, label:`⬡ Trepp: 🚨 In special servicing${ss}${reason}`, trepp:true});
+      dSignals.push({s:100, label:`${IC.trepp}Trepp: ${IC.alert}In special servicing${ss}${reason}`, trepp:true});
     }
-    if(reoDate)   dSignals.push({s:100, label:`⬡ Trepp: REO — became real estate owned ${fmtDate(t.reo_date)}`, trepp:true});
-    if(bankrupt)  dSignals.push({s:95,  label:`⬡ Trepp: Bankruptcy filed ${fmtDate(t.bankruptcy_date)}`, trepp:true});
+    if(reoDate)   dSignals.push({s:100, label:`${IC.trepp}Trepp: REO — became real estate owned ${fmtDate(t.reo_date)}`, trepp:true});
+    if(bankrupt)  dSignals.push({s:95,  label:`${IC.trepp}Trepp: Bankruptcy filed ${fmtDate(t.bankruptcy_date)}`, trepp:true});
     if(delinq&&delinq!=='current'&&delinq!=='-')
-      dSignals.push({s:90, label:`⬡ Trepp: Loan delinquent — status: ${t.delinquency_status}`, trepp:true});
+      dSignals.push({s:90, label:`${IC.trepp}Trepp: Loan delinquent — status: ${t.delinquency_status}`, trepp:true});
     if(timesDelinq>0)
-      dSignals.push({s:Math.min(75,50+timesDelinq*10), label:`⬡ Trepp: Delinquent ${timesDelinq}x in last 12 months`, trepp:true});
+      dSignals.push({s:Math.min(75,50+timesDelinq*10), label:`${IC.trepp}Trepp: Delinquent ${timesDelinq}x in last 12 months`, trepp:true});
     if(watchlist==='yes'){
       const wd=t.watchlist_date&&t.watchlist_date!=='-'?` since ${fmtDate(t.watchlist_date)}`:'';
-      dSignals.push({s:65, label:`⬡ Trepp: On watchlist${wd}`, trepp:true});
+      dSignals.push({s:65, label:`${IC.trepp}Trepp: On watchlist${wd}`, trepp:true});
     }
     if(dscr!==null&&dscr>0){
-      if(dscr<1.0)        dSignals.push({s:80, label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — loan not covering debt service`, trepp:true});
-      else if(dscr<1.25)  dSignals.push({s:50, label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — stressed (below 1.25)`, trepp:true});
-      else                dSignals.push({s:0,  label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — healthy`, trepp:true});
+      if(dscr<1.0)        dSignals.push({s:80, label:`${IC.trepp}Trepp: DSCR ${dscr.toFixed(2)} — loan not covering debt service`, trepp:true});
+      else if(dscr<1.25)  dSignals.push({s:50, label:`${IC.trepp}Trepp: DSCR ${dscr.toFixed(2)} — stressed (below 1.25)`, trepp:true});
+      else                dSignals.push({s:0,  label:`${IC.trepp}Trepp: DSCR ${dscr.toFixed(2)} — healthy`, trepp:true});
     }
     if(ltv!==null&&ltv>0){
-      if(ltv>90)       dSignals.push({s:60, label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — critically overleveraged`, trepp:true});
-      else if(ltv>80)  dSignals.push({s:35, label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — overleveraged`, trepp:true});
-      else             dSignals.push({s:0,  label:`⬡ Trepp: LTV ${ltv.toFixed(1)}%`, trepp:true});
+      if(ltv>90)       dSignals.push({s:60, label:`${IC.trepp}Trepp: LTV ${ltv.toFixed(1)}% — critically overleveraged`, trepp:true});
+      else if(ltv>80)  dSignals.push({s:35, label:`${IC.trepp}Trepp: LTV ${ltv.toFixed(1)}% — overleveraged`, trepp:true});
+      else             dSignals.push({s:0,  label:`${IC.trepp}Trepp: LTV ${ltv.toFixed(1)}%`, trepp:true});
     }
     if(modLoan==='yes'){
       const mt=t.modification_type_servicer&&t.modification_type_servicer!=='-'?` (${t.modification_type_servicer})`:'';
-      dSignals.push({s:40, label:`⬡ Trepp: Loan has been modified${mt}`, trepp:true});
+      dSignals.push({s:40, label:`${IC.trepp}Trepp: Loan has been modified${mt}`, trepp:true});
     }
     if(periodsPast>0 && !effectiveMat)
-      dSignals.push({s:85, label:`⬡ Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past maturity`, trepp:true});
+      dSignals.push({s:85, label:`${IC.trepp}Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past maturity`, trepp:true});
 
     // Affirmative "no distress" note only if truly clean
     if(dSignals.length===0)
-      dSignals.push({s:0, label:`⬡ Trepp: Loan current — no distress signals`, trepp:true});
+      dSignals.push({s:0, label:`${IC.trepp}Trepp: Loan current — no distress signals`, trepp:true});
   } else if(dSignals.length===0){
     dSignals.push({s:0, label:'No distress signals on record (no Trepp data)'});
   }
@@ -584,9 +594,9 @@ function scoreProperty(p){
   const vacancy = parseFloat(p.vacancy)||null;
   if(occ!==null && !isNaN(occ)){
     const vEq=100-occ;
-    if(vEq>20)      mSignals.push({s:75, label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — high vacancy (${vEq.toFixed(1)}%)`, trepp:true});
-    else if(vEq>10) mSignals.push({s:45, label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — elevated vacancy`, trepp:true});
-    else            mSignals.push({s:0,  label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — healthy`, trepp:true});
+    if(vEq>20)      mSignals.push({s:75, label:`${IC.trepp}Trepp: Occupancy ${occ.toFixed(1)}% — high vacancy (${vEq.toFixed(1)}%)`, trepp:true});
+    else if(vEq>10) mSignals.push({s:45, label:`${IC.trepp}Trepp: Occupancy ${occ.toFixed(1)}% — elevated vacancy`, trepp:true});
+    else            mSignals.push({s:0,  label:`${IC.trepp}Trepp: Occupancy ${occ.toFixed(1)}% — healthy`, trepp:true});
   } else if(vacancy!==null && !isNaN(vacancy)){
     if(vacancy>20)      mSignals.push({s:75, label:`CoStar vacancy: ${vacancy.toFixed(1)}% — high`});
     else if(vacancy>10) mSignals.push({s:45, label:`CoStar vacancy: ${vacancy.toFixed(1)}% — elevated`});
@@ -596,7 +606,7 @@ function scoreProperty(p){
   // Cap rate
   const capRate = t ? parseFloat(t.most_recent_implied_cap_rate_noi)||null : parseFloat(p.actual_cap_rate)||null;
   if(capRate!==null && !isNaN(capRate) && capRate>0){
-    const src=t?'⬡ Trepp':'CoStar';
+    const src=t?'Trepp':'CoStar';
     if(capRate<4.5) mSignals.push({s:35, label:`${src}: Cap rate ${capRate.toFixed(2)}% — compressed`, trepp:!!t});
     else            mSignals.push({s:0,  label:`${src}: Cap rate ${capRate.toFixed(2)}%`, trepp:!!t});
   }
@@ -605,8 +615,8 @@ function scoreProperty(p){
   if(t && t.debt_yield_noi){
     const dy=parseFloat(t.debt_yield_noi);
     if(!isNaN(dy) && dy>0){
-      if(dy<6) mSignals.push({s:40, label:`⬡ Trepp: Debt yield ${dy.toFixed(2)}% — compressed`, trepp:true});
-      else     mSignals.push({s:0,  label:`⬡ Trepp: Debt yield ${dy.toFixed(2)}%`, trepp:true});
+      if(dy<6) mSignals.push({s:40, label:`${IC.trepp}Trepp: Debt yield ${dy.toFixed(2)}% — compressed`, trepp:true});
+      else     mSignals.push({s:0,  label:`${IC.trepp}Trepp: Debt yield ${dy.toFixed(2)}%`, trepp:true});
     }
   }
 
@@ -946,7 +956,7 @@ function setSrc(s){activeSrc=s;document.querySelectorAll('.src-btn').forEach(b=>
 // ─── LIST RENDERING ──────────────────────────────────────────────────────────
 function renderList(){
   const panel=document.getElementById('listPanel');
-  if(!filtered.length){panel.innerHTML='<div class="empty-state"><div style="font-size:32px;margin-bottom:12px">🏢</div>No properties match your filters</div>';return;}
+  if(!filtered.length){panel.innerHTML=`<div class="empty-state">${IC.building}<div>No properties match your filters</div></div>`;return;}
   panel.innerHTML=filtered.map(p=>propCard(p)).join('');
 }
 
@@ -981,18 +991,18 @@ function buildChips(p){
 
   // Trepp distress chips (highest priority)
   if(t){
-    if((t.spec_serv_status||'').toLowerCase()==='yes') chips.push({cls:'trepp-distress',label:'⬡ Special Servicer'});
-    if((t.reo_date||'')!=='-'&&t.reo_date) chips.push({cls:'trepp-distress',label:'⬡ REO'});
+    if((t.spec_serv_status||'').toLowerCase()==='yes') chips.push({cls:'trepp-distress',label:'Special Servicer'});
+    if((t.reo_date||'')!=='-'&&t.reo_date) chips.push({cls:'trepp-distress',label:'REO'});
     const delinq=(t.delinquency_status||'').toLowerCase();
-    if(delinq&&delinq!=='current'&&delinq!=='-') chips.push({cls:'trepp-distress',label:`⬡ ${t.delinquency_status}`});
-    if((t.watchlist_status||'').toLowerCase()==='yes') chips.push({cls:'trepp-distress',label:'⬡ Watchlist'});
+    if(delinq&&delinq!=='current'&&delinq!=='-') chips.push({cls:'trepp-distress',label:`${t.delinquency_status}`});
+    if((t.watchlist_status||'').toLowerCase()==='yes') chips.push({cls:'trepp-distress',label:'Watchlist'});
     const dscr=parseFloat(t.dscr_noi);
-    if(!isNaN(dscr)&&dscr>0&&dscr<1.25) chips.push({cls:'trepp-distress',label:`⬡ DSCR ${dscr.toFixed(2)}`});
+    if(!isNaN(dscr)&&dscr>0&&dscr<1.25) chips.push({cls:'trepp-distress',label:`DSCR ${dscr.toFixed(2)}`});
   }
 
   // Reonomy preforeclosure
   if(p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True')
-    chips.push({cls:'distress',label:'⚠ Preforeclosure'});
+    chips.push({cls:'distress',label:'Preforeclosure'});
 
   // Best maturity chip
   const matCandidates=[
@@ -1049,20 +1059,29 @@ function renderMap(){
     const icon=L.divIcon({className:'',html:`<div class="map-dot${sel?' selected':''}" style="width:${sz}px;height:${sz}px;background:${tierColor};border-color:rgba(255,255,255,.8)"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
     const addr=p.address_line_1||p.address||'';
     const m=L.marker([lat,lng],{icon});
-    const srcTag=p._trepp?'⬡ Trepp':'';
+    const srcTag=p._trepp?'Trepp':'';
     m.bindTooltip(`<b>${addr}</b><br>Score: ${p._score} · ${p._tier}${srcTag?' · '+srcTag:''}`,{direction:'top',offset:[0,-4]});
-    m.on('click',()=>selectProperty(p.id));
+    m.on('click',()=>selectProperty(p.id, true));
     markersLayer.addLayer(m);
   });
 }
 
 // ─── PROPERTY DETAIL ──────────────────────────────────────────────────────────
-function selectProperty(id){
+function selectProperty(id, fromMap=false){
   selectedId=id;
   const p=allData.find(x=>String(x.id)===String(id));
   if(!p) return;
-  renderList();renderMap();openDrawer(p);
-  if(map&&!isNaN(parseFloat(p.latitude))){map.panTo([parseFloat(p.latitude),parseFloat(p.longitude)],{animate:true});}
+  renderList();renderMap();
+  const lat=parseFloat(p.latitude), lng=parseFloat(p.longitude);
+  const hasCoords=!isNaN(lat)&&!isNaN(lng);
+  if(fromMap && hasCoords){
+    // Zoom first, open drawer after animation completes
+    map.flyTo([lat,lng], 16, {animate:true, duration:0.7});
+    setTimeout(()=>openDrawer(p), 750);
+  } else {
+    if(hasCoords) map.panTo([lat,lng],{animate:true,duration:0.3});
+    openDrawer(p);
+  }
 }
 
 function openDrawer(p){
@@ -1103,7 +1122,7 @@ function openDrawer(p){
         ${buildDetailGrid(p)}
       </div>
       ${buildContacts(p)?`<div class="dd-section"><div class="dd-section-title">Contacts</div>${buildContacts(p)}</div>`:''}
-      ${p.link?`<div class="dd-section"><a href="${p.link}" target="_blank" class="reo-link">View on Reonomy →</a></div>`:''}
+      ${p.link?`<div class="dd-section"><a href="${p.link}" target="_blank" class="reo-link">View on Reonomy <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>`:''}
     </div>`;
 
   document.getElementById('detailDrawer').classList.add('open');
@@ -1221,7 +1240,7 @@ function buildContacts(p){
       <div class="cc-name">${c.name}</div>
       ${c.title?`<div class="cc-title">${c.title}</div>`:''}
       ${c.co?`<div class="cc-title" style="color:var(--text)">${c.co}</div>`:''}
-      <div class="cc-contact">${c.phone?`<span>📞 ${c.phone}</span>`:''}${c.email?`<span>✉ ${c.email}</span>`:''}</div>
+      <div class="cc-contact">${c.phone?`<span style="display:flex;align-items:center">${IC.phone}${c.phone}</span>`:''}${c.email?`<span style="display:flex;align-items:center">${IC.email}${c.email}</span>`:''}</div>
     </div>`).join('');
   // Trepp owner if no Reonomy contacts
   if(!html&&p._trepp?.owner_1_name&&p._trepp.owner_1_name!=='-'){
@@ -1230,8 +1249,8 @@ function buildContacts(p){
       <div class="cc-name">${t.owner_1_name}</div>
       <div class="cc-title" style="color:var(--text2)">⬡ Trepp Owner</div>
       <div class="cc-contact">
-        ${t.owner_1_phone&&t.owner_1_phone!=='-'?`<span>📞 ${t.owner_1_phone}</span>`:''}
-        ${t.owner_1_email&&t.owner_1_email!=='-'?`<span>✉ ${t.owner_1_email}</span>`:''}
+        ${t.owner_1_phone&&t.owner_1_phone!=='-'?`<span style="display:flex;align-items:center">${IC.phone}${t.owner_1_phone}</span>`:''}
+        ${t.owner_1_email&&t.owner_1_email!=='-'?`<span style="display:flex;align-items:center">${IC.email}${t.owner_1_email}</span>`:''}
       </div>
     </div>`;
   }
