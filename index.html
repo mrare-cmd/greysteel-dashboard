@@ -633,28 +633,80 @@ function scoreProperty(p){
   if(t) sources.push('Trepp');
   details.push({cat:'Market', label:sources.length?`Data sources: ${sources.join(', ')}`:'Data source: Reonomy only'});
 
-  // ── WEIGHTED FINAL with missing-data renormalization ──────────────────────────
+  // ── WEIGHTED FINAL — Option B: Pressure-Gated ────────────────────────────────
+  // Core principle: distress and maturity are the reasons an owner sells NOW.
+  // Hold period and market signals are context, not motivation.
+  //
+  // When pressure exists (distress OR maturity > 0):
+  //   → Full weighted average with missing-data renormalization.
+  //   → Distress and maturity dominate as intended.
+  //
+  // When no pressure (both distress AND maturity = 0):
+  //   → Score capped at 49 (Watch or Cold only — never actionable).
+  //   → Hold contributes at most 40 pts, market at most 9.
+  //
+  // Special override: Trepp critical flags (special servicer, REO, delinquent,
+  // bankruptcy) bypass the gate entirely — missing hold/maturity data should
+  // never soft-cap your most urgent leads.
+
   const w = getWeights();
   const weightMap = {holdPeriod:w.holdPeriod, loanMaturity:w.loanMaturity, distress:w.distress, marketSignals:w.marketSignals};
-  let weightedSum = 0, wAvailable = 0;
-  for(const [cat, score] of Object.entries(catScores)){
-    weightedSum += score * weightMap[cat];
-    wAvailable  += weightMap[cat];
+
+  const distressScore  = catScores.distress      ?? 0;
+  const maturityScore  = catScores.loanMaturity  ?? 0;
+  const holdScore      = catScores.holdPeriod    ?? 0;
+  const marketScore    = catScores.marketSignals ?? 0;
+
+  // Detect Trepp critical flags — these always get full scoring regardless of gate
+  const tCritical = t && (
+    (t.spec_serv_status||'').toLowerCase() === 'yes' ||
+    (t.reo_date && t.reo_date !== '-') ||
+    (t.bankruptcy_date && t.bankruptcy_date !== '-') ||
+    ((t.delinquency_status||'').toLowerCase() !== 'current' && (t.delinquency_status||'').toLowerCase() !== '-' && t.delinquency_status)
+  );
+
+  const pressureExists = distressScore > 0 || maturityScore > 0 || tCritical;
+
+  let finalScore;
+  let scoringMode;
+
+  if(pressureExists){
+    // Full weighted average with renormalization for missing categories
+    let weightedSum = 0, wAvailable = 0;
+    for(const [cat, score] of Object.entries(catScores)){
+      weightedSum += score * weightMap[cat];
+      wAvailable  += weightMap[cat];
+    }
+    finalScore = wAvailable > 0 ? Math.round(weightedSum / wAvailable) : 0;
+    scoringMode = 'pressure';
+  } else {
+    // No pressure — cap at 49, hold and market give context only
+    const holdContrib   = Math.min(holdScore   * 0.40, 40);
+    const marketContrib = Math.min(marketScore * 0.09,  9);
+    finalScore = Math.round(holdContrib + marketContrib);
+    scoringMode = 'no-pressure';
   }
-  const finalScore = wAvailable > 0 ? Math.round(weightedSum / wAvailable) : 0;
+
   const tier = finalScore>=70?'hot':finalScore>=50?'warm':finalScore>=30?'watch':'cold';
 
-  // Build cats object for display (use 0 for missing categories)
+  // Build cats object for display
   const cats = {
-    holdPeriod:    catScores.holdPeriod    ?? 0,
-    loanMaturity:  catScores.loanMaturity  ?? 0,
-    distress:      catScores.distress      ?? 0,
-    marketSignals: catScores.marketSignals ?? 0,
+    holdPeriod:    holdScore,
+    loanMaturity:  maturityScore,
+    distress:      distressScore,
+    marketSignals: marketScore,
   };
 
-  // Flag if data-scarce
-  if(wAvailable < w.holdPeriod + w.loanMaturity + w.distress + w.marketSignals)
-    details.push({cat:'Score', label:`Note: score renormalized — ${Object.keys(catScores).length} of 4 categories have data`});
+  // Explain scoring mode in details
+  if(scoringMode === 'no-pressure'){
+    details.push({cat:'Score', label:'No active pressure signals — score capped at Watch (max 49). Hold period and market signals shown for context only.'});
+  } else {
+    const missing = 4 - Object.keys(catScores).length;
+    if(missing > 0)
+      details.push({cat:'Score', label:`Score renormalized — ${Object.keys(catScores).length} of 4 categories have data`});
+    if(tCritical && !catScores.loanMaturity && !catScores.holdPeriod)
+      details.push({cat:'Score', label:'⬡ Trepp critical flag present — pressure gate bypassed, full distress scoring applied'});
+  }
 
   return {score:finalScore, tier, details, cats};
 }
