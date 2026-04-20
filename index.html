@@ -14,7 +14,7 @@
 :root{
   --blue:#1a73e8;--blue-light:#e8f0fe;--green:#188038;--green-light:#e6f4ea;
   --yellow:#f29900;--yellow-light:#fef7e0;--orange:#fa7b17;--orange-light:#fce8d2;
-  --red:#d93025;--red-light:#fce8e6;
+  --red:#d93025;--red-light:#fce8e6;--purple:#7c3aed;--purple-light:#ede9fe;
   --text:#202124;--text2:#5f6368;--text3:#80868b;
   --border:#dadce0;--bg:#f8f9fa;--white:#fff;
   --shadow:0 1px 3px rgba(60,64,67,.15),0 1px 2px rgba(60,64,67,.3);
@@ -23,65 +23,31 @@
 }
 html,body{height:100%;font-family:'Roboto',sans-serif;font-size:14px;color:var(--text);background:var(--bg)}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
-input{font-family:inherit}
+input,select{font-family:inherit}
 
 /* HEADER */
-header{
-  position:fixed;top:0;left:0;right:0;height:var(--header);
-  background:var(--white);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:16px;z-index:200;
-}
+header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;z-index:200;}
 .logo{display:flex;align-items:center;gap:8px;text-decoration:none;white-space:nowrap}
-.logo-g{
-  width:32px;height:32px;background:var(--blue);color:#fff;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Google Sans',sans-serif;font-size:18px;font-weight:600;
-}
+.logo-g{width:32px;height:32px;background:var(--blue);color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Google Sans',sans-serif;font-size:18px;font-weight:600;}
 .logo-name{font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500;color:var(--text)}
 .logo-sep{color:var(--border);font-size:18px;font-weight:300}
 .logo-page{font-family:'Google Sans',sans-serif;font-size:15px;color:var(--text2)}
-.search-bar{
-  flex:1;max-width:480px;position:relative;
-}
-.search-bar input{
-  width:100%;height:36px;border:1px solid var(--border);border-radius:24px;
-  padding:0 16px 0 40px;font-size:14px;color:var(--text);background:var(--bg);
-  outline:none;transition:all .2s;
-}
+.search-bar{flex:1;max-width:480px;position:relative;}
+.search-bar input{width:100%;height:36px;border:1px solid var(--border);border-radius:24px;padding:0 16px 0 40px;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:all .2s;}
 .search-bar input:focus{background:var(--white);border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
 .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
 .header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.hdr-btn{
-  height:36px;padding:0 16px;border-radius:4px;font-size:13px;font-weight:500;
-  display:flex;align-items:center;gap:6px;transition:background .15s;color:var(--text2);
-}
+.hdr-btn{height:36px;padding:0 16px;border-radius:4px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;transition:background .15s;color:var(--text2);}
 .hdr-btn:hover{background:var(--bg)}
 .hdr-btn.active{color:var(--blue);background:var(--blue-light)}
-.hdr-badge{
-  background:var(--text2);color:#fff;border-radius:12px;
-  padding:2px 8px;font-size:11px;font-weight:500;
-}
-.loading-spinner{
-  width:18px;height:18px;border:2px solid var(--border);
-  border-top-color:var(--blue);border-radius:50%;
-  animation:spin .8s linear infinite;
-}
+.hdr-badge{background:var(--text2);color:#fff;border-radius:12px;padding:2px 8px;font-size:11px;font-weight:500;}
+.loading-spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* TOOLBAR */
-.toolbar{
-  position:fixed;top:var(--header);left:0;right:0;height:var(--toolbar);
-  background:var(--white);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:8px;z-index:190;
-}
-.tier-filter{
-  display:flex;align-items:center;gap:4px;
-  background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px;
-}
-.tier-btn{
-  padding:3px 14px;border-radius:16px;font-size:12px;font-weight:500;
-  transition:all .15s;color:var(--text2);
-}
+.toolbar{position:fixed;top:var(--header);left:0;right:0;height:var(--toolbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;z-index:190;overflow-x:auto;}
+.tier-filter{display:flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px;flex-shrink:0;}
+.tier-btn{padding:3px 12px;border-radius:16px;font-size:12px;font-weight:500;transition:all .15s;color:var(--text2);white-space:nowrap;}
 .tier-btn:hover{background:var(--border)}
 .tier-btn.active{color:#fff}
 .tier-btn[data-tier="all"].active{background:var(--text2)}
@@ -89,23 +55,17 @@ header{
 .tier-btn[data-tier="warm"].active{background:var(--orange)}
 .tier-btn[data-tier="watch"].active{background:var(--yellow);color:#202124}
 .tier-btn[data-tier="cold"].active{background:var(--green)}
-.toolbar-sep{width:1px;height:24px;background:var(--border);margin:0 4px}
-.sort-select{
-  height:32px;border:1px solid var(--border);border-radius:4px;
-  padding:0 8px;font-size:13px;color:var(--text);background:var(--white);
-  outline:none;cursor:pointer;
-}
-.tb-count{margin-left:auto;font-size:12px;color:var(--text2)}
+.toolbar-sep{width:1px;height:24px;background:var(--border);margin:0 4px;flex-shrink:0;}
+.sort-select{height:32px;border:1px solid var(--border);border-radius:4px;padding:0 8px;font-size:13px;color:var(--text);background:var(--white);outline:none;cursor:pointer;flex-shrink:0;}
+/* Source filter toggle */
+.src-filter{display:flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px;flex-shrink:0;}
+.src-btn{padding:3px 10px;border-radius:16px;font-size:11px;font-weight:500;transition:all .15s;color:var(--text2);white-space:nowrap;}
+.src-btn:hover{background:var(--border)}
+.src-btn.active{color:#fff;background:var(--purple)}
+.tb-count{margin-left:auto;font-size:11px;color:var(--text2);white-space:nowrap;flex-shrink:0;}
 
 /* WEIGHTS PANEL */
-.weights-panel{
-  position:fixed;top:calc(var(--header) + var(--toolbar));right:0;
-  width:360px;background:var(--white);border-left:1px solid var(--border);
-  border-bottom:1px solid var(--border);border-bottom-left-radius:8px;
-  box-shadow:var(--shadow-lg);z-index:500;
-  transform:translateY(-110%);opacity:0;pointer-events:none;
-  transition:transform .25s ease,opacity .2s ease;
-}
+.weights-panel{position:fixed;top:calc(var(--header) + var(--toolbar));right:0;width:360px;background:var(--white);border-left:1px solid var(--border);border-bottom:1px solid var(--border);border-bottom-left-radius:8px;box-shadow:var(--shadow-lg);z-index:500;transform:translateY(-110%);opacity:0;pointer-events:none;transition:transform .25s ease,opacity .2s ease;}
 .weights-panel.open{transform:translateY(0);opacity:1;pointer-events:all}
 .wp-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .wp-title{font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500}
@@ -114,202 +74,120 @@ header{
 .weight-label{display:flex;justify-content:space-between;margin-bottom:6px}
 .wl-name{font-size:13px;font-weight:500;color:var(--text)}
 .wl-val{font-size:13px;font-weight:600;color:var(--blue)}
-.weight-slider{
-  width:100%;height:4px;border-radius:2px;background:var(--border);
-  -webkit-appearance:none;outline:none;cursor:pointer;
-}
-.weight-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-  background:var(--blue);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2);
-}
-.hold-periods{margin-top:4px}
+.weight-slider{width:100%;height:4px;border-radius:2px;background:var(--border);-webkit-appearance:none;outline:none;cursor:pointer;}
+.weight-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--blue);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2);}
 .hp-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
-.hp-chip{
-  padding:3px 12px;border-radius:16px;font-size:12px;font-weight:500;
-  border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;background:var(--white);
-}
+.hp-chip{padding:3px 12px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;background:var(--white);}
 .hp-chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .hp-custom-row{display:flex;gap:6px;margin-top:8px;align-items:center}
-.hp-input{
-  width:80px;height:30px;border:1px solid var(--border);border-radius:4px;
-  padding:0 8px;font-size:13px;outline:none;
-}
+.hp-input{width:80px;height:30px;border:1px solid var(--border);border-radius:4px;padding:0 8px;font-size:13px;outline:none;}
 .hp-input:focus{border-color:var(--blue)}
-.hp-add{
-  height:30px;padding:0 12px;background:var(--blue);color:#fff;
-  border-radius:4px;font-size:12px;font-weight:500;transition:background .15s;
-}
+.hp-add{height:30px;padding:0 12px;background:var(--blue);color:#fff;border-radius:4px;font-size:12px;font-weight:500;}
 .hp-add:hover{background:#1557b0}
-.recalc-btn{
-  width:100%;height:36px;background:var(--blue);color:#fff;border-radius:4px;
-  font-size:13px;font-weight:500;margin-top:4px;transition:background .15s;
-}
+.recalc-btn{width:100%;height:36px;background:var(--blue);color:#fff;border-radius:4px;font-size:13px;font-weight:500;margin-top:4px;}
 .recalc-btn:hover{background:#1557b0}
 
 /* MAIN LAYOUT */
-.main{
-  margin-top:calc(var(--header) + var(--toolbar));
-  height:calc(100vh - var(--header) - var(--toolbar));
-  display:flex;overflow:hidden;
-}
-.list-panel{
-  width:420px;flex-shrink:0;overflow-y:auto;background:var(--white);
-  border-right:1px solid var(--border);
-}
+.main{margin-top:calc(var(--header) + var(--toolbar));height:calc(100vh - var(--header) - var(--toolbar));display:flex;overflow:hidden;}
+.list-panel{width:420px;flex-shrink:0;overflow-y:auto;background:var(--white);border-right:1px solid var(--border);}
 .map-panel{flex:1;position:relative}
 #map{width:100%;height:100%}
 
 /* PROPERTY CARDS */
-.prop-card{
-  padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;
-  transition:background .1s;position:relative;
-}
+.prop-card{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
 .prop-card:hover{background:var(--bg)}
 .prop-card.selected{background:var(--blue-light)}
 .pc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .pc-address{font-size:13px;font-weight:500;color:var(--text);line-height:1.4}
-.pc-sub{font-size:11px;color:var(--text2);margin-top:2px}
-.score-badge{
-  flex-shrink:0;min-width:44px;height:28px;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Google Sans',sans-serif;font-size:13px;font-weight:600;
-}
+.pc-sub{font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px;}
+.pc-src-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.02em;}
+.pc-src-badge.reonomy{background:var(--blue-light);color:var(--blue)}
+.pc-src-badge.trepp{background:var(--purple-light);color:var(--purple)}
+.pc-src-badge.both{background:#f3e8ff;color:#6d28d9}
+.score-badge{flex-shrink:0;min-width:44px;height:28px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Google Sans',sans-serif;font-size:13px;font-weight:600;}
 .score-badge.hot{background:var(--red-light);color:var(--red)}
 .score-badge.warm{background:var(--orange-light);color:var(--orange)}
 .score-badge.watch{background:var(--yellow-light);color:#c17800}
 .score-badge.cold{background:var(--green-light);color:var(--green)}
-.pc-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
-.pc-chip{
-  padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;
-  background:var(--bg);color:var(--text2);border:1px solid var(--border);
-}
+.pc-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.pc-chip{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;background:var(--bg);color:var(--text2);border:1px solid var(--border);}
 .pc-chip.distress{background:#fce8e6;color:#d93025;border-color:#f5c6c2}
-.pc-chip.maturity{background:#e8f0fe;color:#1a73e8;border-color:#aecbfa}
-.pc-chip.hold{background:#fef7e0;color:#c17800;border-color:#fde68a}
-.pc-chip.market{background:#e6f4ea;color:#188038;border-color:#a8d5b5}
+.pc-chip.trepp-distress{background:var(--purple-light);color:var(--purple);border-color:#c4b5fd}
+.pc-chip.maturity{background:var(--blue-light);color:var(--blue);border-color:#aecbfa}
+.pc-chip.hold{background:var(--yellow-light);color:#c17800;border-color:#fde68a}
+.pc-chip.market{background:var(--green-light);color:var(--green);border-color:#a8d5b5}
 .empty-state{padding:60px 20px;text-align:center;color:var(--text2)}
-.empty-icon{font-size:32px;margin-bottom:12px}
-.loading-list{padding:20px}
-.skeleton{height:12px;background:var(--border);border-radius:4px;margin-bottom:8px;animation:shimmer 1.4s infinite}
+.skeleton{height:80px;background:var(--border);border-radius:4px;margin-bottom:1px;animation:shimmer 1.4s infinite}
 @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.8}}
 
 /* DETAIL DRAWER */
-.detail-drawer{
-  position:fixed;right:0;top:0;bottom:0;width:460px;
-  background:var(--white);box-shadow:-4px 0 16px rgba(60,64,67,.15);
-  z-index:600;transform:translateX(100%);transition:transform .25s ease;
-  display:flex;flex-direction:column;overflow:hidden;
-}
-#drawerContent{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
+.detail-drawer{position:fixed;right:0;top:0;bottom:0;width:480px;background:var(--white);box-shadow:-4px 0 16px rgba(60,64,67,.15);z-index:600;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;overflow:hidden;}
 .detail-drawer.open{transform:translateX(0)}
-.detail-drawer *{box-sizing:border-box}
-.dd-header{
-  padding:16px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:flex-start;gap:12px;flex-shrink:0;
-}
-.dd-close{
-  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;color:var(--text2);transition:background .15s;flex-shrink:0;
-}
+#drawerContent{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
+.dd-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;flex-shrink:0;}
+.dd-close{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:background .15s;flex-shrink:0;}
 .dd-close:hover{background:var(--bg)}
 .dd-title{font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500;line-height:1.3}
 .dd-sub{font-size:12px;color:var(--text2);margin-top:3px}
-.dd-score-big{
-  margin-left:auto;flex-shrink:0;width:52px;height:52px;border-radius:12px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-}
-.dd-score-big.hot{background:var(--red-light)}
-.dd-score-big.warm{background:var(--orange-light)}
-.dd-score-big.watch{background:var(--yellow-light)}
-.dd-score-big.cold{background:var(--green-light)}
-.ddsb-num{font-family:'Google Sans',sans-serif;font-size:22px;font-weight:600}
+.dd-score-big{margin-left:auto;flex-shrink:0;width:56px;height:56px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.dd-score-big.hot{background:var(--red-light)}.dd-score-big.warm{background:var(--orange-light)}.dd-score-big.watch{background:var(--yellow-light)}.dd-score-big.cold{background:var(--green-light)}
+.ddsb-num{font-family:'Google Sans',sans-serif;font-size:24px;font-weight:600}
 .ddsb-label{font-size:9px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-top:1px}
-.hot .ddsb-num,.hot .ddsb-label{color:var(--red)}
-.warm .ddsb-num,.warm .ddsb-label{color:var(--orange)}
-.watch .ddsb-num,.watch .ddsb-label{color:#c17800}
-.cold .ddsb-num,.cold .ddsb-label{color:var(--green)}
+.hot .ddsb-num,.hot .ddsb-label{color:var(--red)}.warm .ddsb-num,.warm .ddsb-label{color:var(--orange)}.watch .ddsb-num,.watch .ddsb-label{color:#c17800}.cold .ddsb-num,.cold .ddsb-label{color:var(--green)}
 .dd-body{flex:1;overflow-y:scroll;padding:16px 20px 40px;display:flex;flex-direction:column;gap:20px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0;}
-.dd-section{margin-bottom:20px}
-.dd-section-title{
-  font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--text3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);
-}
-.score-breakdown{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-.sb-row{
-  display:flex;align-items:center;gap:10px;padding:8px 12px;
-  background:var(--bg);border-radius:6px;
-}
-.sb-cat{
-  width:80px;flex-shrink:0;font-size:11px;font-weight:500;
-  text-transform:uppercase;letter-spacing:.05em;
-}
+.dd-section{display:flex;flex-direction:column;gap:0}
+.dd-section-title{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+/* Score breakdown */
+.score-breakdown{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.sb-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg);border-radius:6px;}
+.sb-cat{width:80px;flex-shrink:0;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
 .sb-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .sb-bar{height:100%;border-radius:3px;transition:width .4s ease}
-.sb-bar.hold{background:var(--yellow)}
-.sb-bar.maturity{background:var(--blue)}
-.sb-bar.distress{background:var(--red)}
-.sb-bar.market{background:var(--green)}
+.sb-bar.hold{background:var(--yellow)}.sb-bar.maturity{background:var(--blue)}.sb-bar.distress{background:var(--red)}.sb-bar.market{background:var(--green)}
 .sb-score{width:32px;text-align:right;font-size:12px;font-weight:600;flex-shrink:0}
-.sb-reasons{padding:4px 0 0 12px;list-style:none;display:flex;flex-direction:column;gap:4px}
-.sb-reasons li{font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:6px}
+.sb-reasons{list-style:none;display:flex;flex-direction:column;gap:4px;padding:4px 0 0 4px}
+.sb-reasons li{font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:6px;padding:3px 0;}
 .sb-reasons li::before{content:'•';color:var(--text3);flex-shrink:0}
+.sb-reasons li.trepp-signal{color:var(--purple)}
+.sb-reasons li.trepp-signal::before{content:'⬡';color:var(--purple)}
+/* Detail grid */
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.dg-section-head{grid-column:1/-1;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-top:8px;padding-bottom:4px;border-bottom:1px solid var(--blue-light)}
-.dg-item{padding:10px;background:var(--bg);border-radius:6px}
-.dg-label{font-size:11px;color:var(--text3);margin-bottom:3px}
-.dg-val{font-size:13px;font-weight:500;color:var(--text)}
+.dg-section-head{grid-column:1/-1;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-top:4px;}
+.dg-section-head.reonomy{color:var(--blue)}
+.dg-section-head.trepp{color:var(--purple)}
+.dg-section-head.costar{color:var(--green)}
+.dg-section-head.sale{color:var(--orange)}
+.dg-section-head.mortgage{color:var(--text2)}
+.dg-item{padding:8px 10px;background:var(--bg);border-radius:6px;}
 .dg-item.full{grid-column:1/-1}
-.contact-card{
-  padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;
-}
+.dg-label{font-size:11px;color:var(--text3);margin-bottom:2px}
+.dg-val{font-size:12px;font-weight:500;color:var(--text)}
+.dg-val.warn{color:var(--red)}
+.dg-val.caution{color:var(--orange)}
+.dg-val.ok{color:var(--green)}
+/* Contact cards */
+.contact-card{padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
 .cc-name{font-size:13px;font-weight:500}
 .cc-title{font-size:12px;color:var(--text2);margin-top:2px}
 .cc-contact{font-size:12px;color:var(--blue);margin-top:4px;display:flex;flex-direction:column;gap:2px}
-.reo-link{
-  display:inline-flex;align-items:center;gap:4px;color:var(--blue);
-  font-size:13px;font-weight:500;text-decoration:none;
-  padding:8px 0;
-}
+.reo-link{display:inline-flex;align-items:center;gap:4px;color:var(--blue);font-size:13px;font-weight:500;text-decoration:none;padding:8px 0;}
 .reo-link:hover{text-decoration:underline}
-
-/* MAP STYLES */
-.map-dot{
-  border-radius:50%;border:2px solid rgba(255,255,255,.8);
-  cursor:pointer;transition:transform .1s;
-}
+/* Map */
+.map-dot{border-radius:50%;border:2px solid rgba(255,255,255,.8);cursor:pointer;transition:transform .1s;}
 .map-dot:hover{transform:scale(1.3)}
-.map-dot.hot{background:var(--red)}
-.map-dot.warm{background:var(--orange)}
-.map-dot.watch{background:var(--yellow)}
-.map-dot.cold{background:var(--green)}
-.map-dot.selected{
-  transform:scale(1.5);
-  box-shadow:0 0 0 4px rgba(26,115,232,.4);
-}
-.leaflet-tooltip{
-  background:var(--text);color:#fff;border:none;border-radius:4px;
-  font-size:11px;padding:4px 8px;font-family:'Roboto',sans-serif;
-  box-shadow:0 2px 8px rgba(0,0,0,.3);
-}
+.map-dot.hot{background:var(--red)}.map-dot.warm{background:var(--orange)}.map-dot.watch{background:var(--yellow)}.map-dot.cold{background:var(--green)}
+.map-dot.trepp-only{border:2px solid var(--purple)}
+.map-dot.selected{transform:scale(1.5);box-shadow:0 0 0 4px rgba(26,115,232,.35);}
+.leaflet-tooltip{background:var(--text);color:#fff;border:none;border-radius:4px;font-size:11px;padding:4px 8px;font-family:'Roboto',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);}
 .leaflet-tooltip::before{border-top-color:var(--text)}
-.map-legend{
-  position:absolute;bottom:24px;left:16px;z-index:100;
-  background:var(--white);border:1px solid var(--border);
-  border-radius:8px;padding:10px 14px;box-shadow:var(--shadow);
-}
+.map-legend{position:absolute;bottom:24px;left:16px;z-index:100;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 14px;box-shadow:var(--shadow);}
 .ml-title{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
 .ml-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.ml-dot{width:10px;height:10px;border-radius:50%}
+.ml-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .ml-label{font-size:12px;color:var(--text)}
-.leaflet-control-zoom a{
-  font-size:18px !important;color:var(--text) !important;
-  background:var(--white) !important;border-color:var(--border) !important;
-}
+.leaflet-control-zoom a{font-size:18px !important;color:var(--text) !important;background:var(--white) !important;border-color:var(--border) !important;}
 .leaflet-control-zoom a:hover{background:var(--bg) !important;color:var(--blue) !important}
-.overlay-backdrop{
-  position:fixed;inset:0;background:rgba(32,33,36,.5);z-index:599;
-  opacity:0;pointer-events:none;transition:opacity .2s;
-}
+.overlay-backdrop{position:fixed;inset:0;background:rgba(32,33,36,.5);z-index:599;opacity:0;pointer-events:none;transition:opacity .2s;}
 .overlay-backdrop.show{opacity:1;pointer-events:all}
 </style>
 </head>
@@ -323,17 +201,14 @@ header{
     <span class="logo-page">Priority Dashboard</span>
   </a>
   <div class="search-bar">
-    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-      <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-    <input type="text" id="searchInput" placeholder="Search by address, owner, or submarket...">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <input type="text" id="searchInput" placeholder="Search address, owner, submarket, loan name...">
   </div>
   <div class="header-right">
     <div id="loadingSpinner" class="loading-spinner" style="display:none"></div>
     <span id="totalBadge" class="hdr-badge">–</span>
     <button class="hdr-btn" id="weightsToggleBtn" onclick="toggleWeights()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       Scoring Weights
     </button>
   </div>
@@ -348,14 +223,21 @@ header{
     <button class="tier-btn" data-tier="cold" onclick="setTier('cold')">🟢 Cold</button>
   </div>
   <div class="toolbar-sep"></div>
-  <select class="sort-select" id="sortSelect" onchange="resort()">
+  <div class="src-filter">
+    <button class="src-btn active" data-src="all" onclick="setSrc('all')">All Sources</button>
+    <button class="src-btn" data-src="trepp" onclick="setSrc('trepp')">⬡ Has Trepp</button>
+    <button class="src-btn" data-src="trepp-only" onclick="setSrc('trepp-only')">Trepp Only</button>
+  </div>
+  <div class="toolbar-sep"></div>
+  <select class="sort-select" id="sortSelect" onchange="applyFilters()">
     <option value="score">Sort: Priority Score</option>
     <option value="maturity">Sort: Soonest Maturity</option>
     <option value="hold">Sort: Longest Hold</option>
     <option value="sale_amount">Sort: Sale Price</option>
+    <option value="balance">Sort: Loan Balance</option>
   </select>
   <span class="tb-count" id="tbCount"></span>
-  <span class="tb-count" id="matchInfo" style="margin-left:0;color:var(--text3)"></span>
+  <span class="tb-count" id="matchInfo" style="color:var(--text3)"></span>
 </div>
 
 <!-- Weights Panel -->
@@ -366,36 +248,20 @@ header{
   </div>
   <div class="wp-body">
     <div class="weight-row">
-      <div class="weight-label">
-        <span class="wl-name">🏠 Hold Period</span>
-        <span class="wl-val" id="wHoldVal">3</span>
-      </div>
-      <input type="range" class="weight-slider" id="wHold" min="0" max="5" value="3" step="1"
-        oninput="document.getElementById('wHoldVal').textContent=this.value">
+      <div class="weight-label"><span class="wl-name">🏠 Hold Period</span><span class="wl-val" id="wHoldVal">3</span></div>
+      <input type="range" class="weight-slider" id="wHold" min="0" max="5" value="3" step="1" oninput="document.getElementById('wHoldVal').textContent=this.value">
     </div>
     <div class="weight-row">
-      <div class="weight-label">
-        <span class="wl-name">📅 Loan Maturity</span>
-        <span class="wl-val" id="wMatVal">4</span>
-      </div>
-      <input type="range" class="weight-slider" id="wMat" min="0" max="5" value="4" step="1"
-        oninput="document.getElementById('wMatVal').textContent=this.value">
+      <div class="weight-label"><span class="wl-name">📅 Loan Maturity</span><span class="wl-val" id="wMatVal">4</span></div>
+      <input type="range" class="weight-slider" id="wMat" min="0" max="5" value="4" step="1" oninput="document.getElementById('wMatVal').textContent=this.value">
     </div>
     <div class="weight-row">
-      <div class="weight-label">
-        <span class="wl-name">⚠️ Distress Signals</span>
-        <span class="wl-val" id="wDistVal">5</span>
-      </div>
-      <input type="range" class="weight-slider" id="wDist" min="0" max="5" value="5" step="1"
-        oninput="document.getElementById('wDistVal').textContent=this.value">
+      <div class="weight-label"><span class="wl-name">⚠️ Distress Signals</span><span class="wl-val" id="wDistVal">5</span></div>
+      <input type="range" class="weight-slider" id="wDist" min="0" max="5" value="5" step="1" oninput="document.getElementById('wDistVal').textContent=this.value">
     </div>
     <div class="weight-row">
-      <div class="weight-label">
-        <span class="wl-name">📊 Market Signals</span>
-        <span class="wl-val" id="wMktVal">2</span>
-      </div>
-      <input type="range" class="weight-slider" id="wMkt" min="0" max="5" value="2" step="1"
-        oninput="document.getElementById('wMktVal').textContent=this.value">
+      <div class="weight-label"><span class="wl-name">📊 Market Signals</span><span class="wl-val" id="wMktVal">2</span></div>
+      <input type="range" class="weight-slider" id="wMkt" min="0" max="5" value="2" step="1" oninput="document.getElementById('wMktVal').textContent=this.value">
     </div>
     <div class="weight-row">
       <div class="weight-label"><span class="wl-name">Hold Period Milestones (years)</span></div>
@@ -416,15 +282,10 @@ header{
 
 <div class="main">
   <div class="list-panel" id="listPanel">
-    <div class="loading-list" id="loadingList">
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
-      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+    <div id="loadingList">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      <div class="skeleton"></div><div class="skeleton"></div>
     </div>
   </div>
   <div class="map-panel">
@@ -435,14 +296,13 @@ header{
       <div class="ml-row"><div class="ml-dot" style="background:#fa7b17"></div><span class="ml-label">Warm (50–69)</span></div>
       <div class="ml-row"><div class="ml-dot" style="background:#f29900"></div><span class="ml-label">Watch (30–49)</span></div>
       <div class="ml-row"><div class="ml-dot" style="background:#188038"></div><span class="ml-label">Cold (0–29)</span></div>
+      <div class="ml-row"><div class="ml-dot" style="background:#7c3aed;border:2px solid #7c3aed"></div><span class="ml-label">Trepp only</span></div>
     </div>
   </div>
 </div>
 
 <div class="overlay-backdrop" id="backdrop" onclick="closeDrawer()"></div>
-<div class="detail-drawer" id="detailDrawer">
-  <div id="drawerContent"></div>
-</div>
+<div class="detail-drawer" id="detailDrawer"><div id="drawerContent"></div></div>
 
 <script>
 const SUPABASE_URL = 'https://ltghqmxujltnjztqabcl.supabase.co';
@@ -450,211 +310,32 @@ const SUPABASE_KEY = 'sb_publishable_3I2-OWIFSCaf9FsdVql_FA_Ln9SwwI8';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let allData = [];
-let filtered = [];
-let selectedId = null;
-let activeTier = 'all';
-let activeSort = 'score';
-let searchQ = '';
+let allData = [], filtered = [], selectedId = null;
+let activeTier = 'all', activeSrc = 'all', searchQ = '';
 let map, markersLayer;
 let holdPeriods = [3,5,7,10];
 
-// ─── SCORING ───────────────────────────────────────────────────────────────
-function parseD(v){ if(!v) return null; const d=new Date(v); return isNaN(d)?null:d; }
-function fmtMoney(v){ const n=parseFloat(v); return isNaN(n)?null:'$'+Math.round(n).toLocaleString(); }
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function parseD(v){ if(!v||v==='-') return null; const d=new Date(v); return isNaN(d)?null:d; }
+function fmtMoney(v){ const n=parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n)?null:'$'+Math.round(n).toLocaleString(); }
 function fmtDate(v){ const d=parseD(v); return d?d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):null; }
 function yearsSince(d){ return d?(new Date()-d)/(365.25*24*3600*1000):null; }
 function daysUntil(d){ return d?(d-new Date())/(24*3600*1000):null; }
+function fmtNum(v,dec=2){ const n=parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n)?null:n.toFixed(dec); }
 
-function scoreProperty(p){
-  const today = new Date();
-  const details = [];
-  const cats = {holdPeriod:0, loanMaturity:0, distress:0, marketSignals:0};
+function normalizeAddr(s){
+  return (s||'').toLowerCase().trim()
+    .replace(/\s+/g,' ').replace(/\bstreet\b/g,'st').replace(/\bavenue\b/g,'ave')
+    .replace(/\bboulevard\b/g,'blvd').replace(/\bdrive\b/g,'dr').replace(/\broad\b/g,'rd')
+    .replace(/\bcourt\b/g,'ct').replace(/\bnorthwest\b/g,'nw').replace(/\bnortheast\b/g,'ne')
+    .replace(/\bsouthwest\b/g,'sw').replace(/\bsoutheast\b/g,'se')
+    .replace(/[.,#]/g,'').trim();
+}
 
-  // HOLD PERIOD
-  // Use most recent sale date (sale_recorded_date = most recent, sale2_recorded_date = prior sale)
-  const sd1 = parseD(p.sale_recorded_date || p.sale_date);
-  const sd2 = parseD(p.sale2_recorded_date);
-  let saleDate = null;
-  if(sd1 && sd2) saleDate = sd1 > sd2 ? sd1 : sd2;
-  else saleDate = sd1 || sd2;
-
-  if(saleDate){
-    const yrs = yearsSince(saleDate);
-    const saleDateStr = fmtDate(saleDate);
-    let best=0, bestLabel='';
-    for(const period of holdPeriods){
-      const diff = yrs - period;
-      let s=0, lbl='';
-      if(diff >= -0.75 && diff < 0){
-        const moAway = Math.round(-diff*12);
-        s = 60 + (1-(Math.abs(diff)/0.75))*40;
-        lbl = `${moAway} month${moAway!==1?'s':''} away from ${period}-year hold milestone (last sold ${saleDateStr})`;
-      } else if(diff >= 0 && diff < 0.5){
-        s = 100;
-        lbl = `Just hit ${period}-year hold milestone (last sold ${saleDateStr})`;
-      } else if(diff >= 0.5 && diff < 1){
-        s = 80;
-        lbl = `${Math.round(diff*12)} months past ${period}-year hold (last sold ${saleDateStr})`;
-      } else if(diff >= 1 && diff < 2){
-        s = 60 - (diff-1)*30;
-        lbl = `${Math.round(yrs*10)/10} years since sale — passed ${period}-yr milestone (last sold ${saleDateStr})`;
-      }
-      if(s>best){ best=s; bestLabel=lbl; }
-    }
-    cats.holdPeriod = Math.round(best);
-    if(bestLabel) details.push({cat:'Hold Period', label:bestLabel});
-    else {
-      const sortedPeriods = [...holdPeriods].sort((a,b)=>a-b);
-      const nextMilestone = sortedPeriods.find(period => period > yrs);
-      if(nextMilestone){
-        const moToNext = Math.round((nextMilestone - yrs)*12);
-        details.push({cat:'Hold Period', label:`${Math.round(yrs*10)/10} yrs since last sale — ${moToNext} months until ${nextMilestone}-yr milestone (last sold ${saleDateStr})`});
-      } else {
-        details.push({cat:'Hold Period', label:`${Math.round(yrs*10)/10} yrs since last sale (last sold ${saleDateStr})`});
-      }
-    }
-  } else {
-    details.push({cat:'Hold Period', label:'No sale date on record — hold period cannot be calculated'});
-  }
-
-  // LOAN MATURITY -- only score the most relevant mortgage
-  // Logic: prefer the one with the future or most recent maturity date
-  // Ignore maturities that are more than 5 years in the past (stale/paid off)
-  const today2 = new Date();
-  const STALE_CUTOFF_DAYS = -365; // ignore loans matured more than 1 year ago
-  const mats = [
-    {date:parseD(p.mortgage_maturity_date), amt:parseFloat(p.mortgage_amount)||0,
-     lender:p.mortgage_standardized_name||p.mortgage_recorded_name, name:'Primary loan'},
-    {date:parseD(p.mortgage2_maturity_date), amt:parseFloat(p.mortgage2_amount)||0,
-     lender:p.mortgage2_standardized_name||p.mortgage2_recorded_name, name:'Second loan'},
-  ].filter(m => {
-    if(!m.date) return false;
-    const d = daysUntil(m.date);
-    return d > STALE_CUTOFF_DAYS;
-  });
-
-  const futureMats = mats.filter(m => daysUntil(m.date) > 0).sort((a,b)=>daysUntil(a.date)-daysUntil(b.date));
-  const pastMats = mats.filter(m => daysUntil(m.date) <= 0).sort((a,b)=>daysUntil(b.date)-daysUntil(a.date));
-  const activeMats = futureMats.length ? futureMats : pastMats;
-
-  let bestMat=0;
-  if(activeMats.length === 0){
-    details.push({cat:'Loan Maturity', label:'No active mortgage maturity date on record'});
-  }
-  for(const {date,name,lender,amt} of activeMats.slice(0,1)){
-    if(!date) continue;
-    const days = daysUntil(date);
-    const lenderStr = lender ? ` (${lender}${amt?' — '+fmtMoney(amt):''})`:'';
-    const matDateStr = fmtDate(date);
-    let s=0, lbl='';
-    if(days<0&&days>-180){s=80;lbl=`${name}${lenderStr} matured ${Math.abs(Math.round(days))} days ago — ${matDateStr}`;}
-    else if(days<0&&days>-365){s=60;lbl=`${name}${lenderStr} matured ${Math.abs(Math.round(days/30))} months ago — ${matDateStr}`;}
-    else if(days<0){s=30;lbl=`${name}${lenderStr} matured ${Math.abs(Math.round(days/365*10)/10)} yrs ago — ${matDateStr}`;}
-    else if(days<90){s=95;lbl=`${name}${lenderStr} matures in ${Math.round(days)} days — ${matDateStr}`;}
-    else if(days<180){s=85;lbl=`${name}${lenderStr} matures in ${Math.round(days/30)} months — ${matDateStr}`;}
-    else if(days<365){s=70;lbl=`${name}${lenderStr} matures within 1 year — ${matDateStr}`;}
-    else if(days<730){s=45;lbl=`${name}${lenderStr} matures in ~${Math.round(days/365)} yrs — ${matDateStr}`;}
-    else if(days<1095){s=20;lbl=`${name}${lenderStr} matures in ~${Math.round(days/365)} yrs — ${matDateStr}`;}
-    else{lbl=`${name}${lenderStr} — maturity ${matDateStr} (>3 yrs away)`;}
-    if(s>bestMat){ bestMat=s; }
-    if(lbl) details.push({cat:'Loan Maturity',label:lbl});
-  }
-  cats.loanMaturity = bestMat;
-  if(p.mortgage_amount && p.mortgage2_amount && activeMats.length>1){
-    const l2 = activeMats[1];
-    details.push({cat:'Loan Maturity',label:`Multiple active loans — second: ${l2.lender||'unknown lender'}${l2.amt?' '+fmtMoney(l2.amt):''}, matures ${fmtDate(l2.date)}`});
-    cats.loanMaturity = Math.max(cats.loanMaturity, 25);
-  }
-
-  // DISTRESS
-  const prefoActive = p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True';
-  if(prefoActive){
-    cats.distress=100;
-    const recordingDate = fmtDate(p.preforeclosure_recording_date);
-    const plaintiff = p.preforeclosure_plaintiff_1 ? ` — Filed by: ${p.preforeclosure_plaintiff_1}` : '';
-    const docType = p.preforeclosure_doc_type ? ` (${p.preforeclosure_doc_type})` : '';
-    const deedCat = p.preforeclosure_deed_category ? ` — Category: ${p.preforeclosure_deed_category}` : '';
-    details.push({cat:'Distress',label:`🚨 Active preforeclosure${docType}${deedCat}${recordingDate?', recorded '+recordingDate:''}${plaintiff}`});
-  }
-  const auction = parseD(p.preforeclosure_auction_date);
-  if(auction){
-    const d = daysUntil(auction);
-    const time = p.preforeclosure_auction_time ? ` at ${p.preforeclosure_auction_time}` : '';
-    const loc = p.preforeclosure_street_address_of_auction_call ? ` — Location: ${p.preforeclosure_street_address_of_auction_call}` : '';
-    const trustee = p.preforeclosure_trustee_name ? ` — Trustee: ${p.preforeclosure_trustee_name}` : '';
-    if(d!==null && d>0 && d<180){
-      cats.distress=Math.max(cats.distress,90);
-      details.push({cat:'Distress',label:`Foreclosure auction in ${Math.round(d)} days (${fmtDate(p.preforeclosure_auction_date)}${time})${loc}${trustee}`});
-    } else if(d!==null && d>0){
-      cats.distress=Math.max(cats.distress,50);
-      details.push({cat:'Distress',label:`Foreclosure auction scheduled: ${fmtDate(p.preforeclosure_auction_date)}${time}${loc}${trustee}`});
-    } else if(d!==null && d<=0){
-      cats.distress=Math.max(cats.distress,60);
-      details.push({cat:'Distress',label:`Foreclosure auction date passed (${fmtDate(p.preforeclosure_auction_date)})${trustee}`});
-    }
-  }
-  if(p.preforeclosure_final_judgement_amount && parseFloat(p.preforeclosure_final_judgement_amount)>0){
-    cats.distress=Math.max(cats.distress,70);
-    const amt=fmtMoney(p.preforeclosure_final_judgement_amount);
-    const plaintiff2 = p.preforeclosure_plaintiff_1 ? ` — Plaintiff: ${p.preforeclosure_plaintiff_1}` : '';
-    details.push({cat:'Distress',label:`Final judgement on record: ${amt}${plaintiff2}`});
-  }
-  if(p.preforeclosure_recording_date && !prefoActive && !auction && !(p.preforeclosure_final_judgement_amount>0)){
-    cats.distress=Math.max(cats.distress,40);
-    const deedCat2 = p.preforeclosure_deed_category ? ` — ${p.preforeclosure_deed_category}` : '';
-    const docType2 = p.preforeclosure_doc_type ? ` (${p.preforeclosure_doc_type})` : '';
-    details.push({cat:'Distress',label:`Preforeclosure filing on record${docType2}${deedCat2} — ${fmtDate(p.preforeclosure_recording_date)}`});
-  }
-  if(!prefoActive && !auction && !p.preforeclosure_recording_date && !p.preforeclosure_final_judgement_amount){
-    details.push({cat:'Distress',label:'No distress signals on record'});
-  }
-
-  // MARKET SIGNALS
-  if(p.vacancy){
-    const v=parseFloat(p.vacancy);
-    if(!isNaN(v)){
-      if(v>20){cats.marketSignals=Math.max(cats.marketSignals,70);details.push({cat:'Market',label:`High vacancy: ${v.toFixed(1)}% (above 20% threshold)`});}
-      else if(v>10){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`Elevated vacancy: ${v.toFixed(1)}% (above 10% threshold)`});}
-      else {details.push({cat:'Market',label:`Vacancy: ${v.toFixed(1)}% (healthy)`});}
-    }
-  }
-  if(p.actual_cap_rate){
-    const c=parseFloat(p.actual_cap_rate);
-    if(!isNaN(c)&&c>0){
-      if(c<4.5){cats.marketSignals=Math.max(cats.marketSignals,35);details.push({cat:'Market',label:`Compressed cap rate: ${c.toFixed(2)}% — may indicate value-add or sell pressure`});}
-      else {details.push({cat:'Market',label:`Cap rate: ${c.toFixed(2)}%`});}
-    }
-  }
-  const yrBuilt=parseFloat(p.year_built);
-  if(!isNaN(yrBuilt)){
-    const age=new Date().getFullYear()-yrBuilt;
-    if(age>60&&!p.year_renovated){
-      cats.marketSignals=Math.max(cats.marketSignals,25);
-      details.push({cat:'Market',label:`Aging building: built ${Math.round(yrBuilt)} (${age} yrs old), no renovation on record`});
-    } else if(p.year_renovated){
-      details.push({cat:'Market',label:`Built ${Math.round(yrBuilt)}, renovated ${Math.round(p.year_renovated)}`});
-    }
-  }
-  if(p._hasCostar){
-    const method = p._matchMethod === 'coord' ? 'coordinate match' : 'address match';
-    details.push({cat:'Market',label:`CoStar data linked via ${method} — vacancy and cap rate data augmented`});
-  } else {
-    details.push({cat:'Market',label:`No CoStar match found — vacancy/cap rate data unavailable`});
-  }
-
-  // WEIGHTED FINAL
-  const w = getWeights();
-  const wTotal = w.holdPeriod+w.loanMaturity+w.distress+w.marketSignals;
-  let score = 0;
-  if(wTotal>0){
-    score = Math.round(
-      (cats.holdPeriod*w.holdPeriod + cats.loanMaturity*w.loanMaturity +
-       cats.distress*w.distress + cats.marketSignals*w.marketSignals) / wTotal
-    );
-  }
-  const tier = score>=70?'hot':score>=50?'warm':score>=30?'watch':'cold';
-  return {score, tier, details, cats};
+function haversineMeters(lat1,lng1,lat2,lng2){
+  const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 
 function getWeights(){
@@ -666,19 +347,255 @@ function getWeights(){
   };
 }
 
-// ─── DATA FETCHING ──────────────────────────────────────────────────────────
-async function fetchAll(table, filters){
-  // Supabase default limit is 1000 -- paginate to get everything
-  const PAGE = 1000;
-  let all = [], from = 0, done = false;
+// ─── SCORING ────────────────────────────────────────────────────────────────
+function scoreProperty(p){
+  const details = [];
+  const cats = {holdPeriod:0, loanMaturity:0, distress:0, marketSignals:0};
+  const t = p._trepp; // Trepp record if matched
+
+  // ── HOLD PERIOD ──
+  const sd1 = parseD(p.sale_recorded_date||p.sale_date);
+  const sd2 = parseD(p.sale2_recorded_date);
+  let saleDate = (sd1&&sd2)?(sd1>sd2?sd1:sd2):(sd1||sd2);
+  if(saleDate){
+    const yrs=yearsSince(saleDate), saleDateStr=fmtDate(saleDate);
+    let best=0, bestLabel='';
+    for(const period of holdPeriods){
+      const diff=yrs-period; let s=0,lbl='';
+      if(diff>=-0.75&&diff<0){const mo=Math.round(-diff*12);s=60+(1-(Math.abs(diff)/0.75))*40;lbl=`${mo} month${mo!==1?'s':''} away from ${period}-yr hold milestone (sold ${saleDateStr})`;}
+      else if(diff>=0&&diff<0.5){s=100;lbl=`Just hit ${period}-yr hold milestone (sold ${saleDateStr})`;}
+      else if(diff>=0.5&&diff<1){s=80;lbl=`${Math.round(diff*12)} months past ${period}-yr hold (sold ${saleDateStr})`;}
+      else if(diff>=1&&diff<2){s=60-(diff-1)*30;lbl=`${Math.round(yrs*10)/10} yrs since sale — past ${period}-yr milestone (sold ${saleDateStr})`;}
+      if(s>best){best=s;bestLabel=lbl;}
+    }
+    cats.holdPeriod=Math.round(best);
+    if(bestLabel) details.push({cat:'Hold Period',label:bestLabel});
+    else{
+      const next=[...holdPeriods].sort((a,b)=>a-b).find(p=>p>yrs);
+      const mo=next?Math.round((next-yrs)*12):null;
+      details.push({cat:'Hold Period',label:mo?`${Math.round(yrs*10)/10} yrs since last sale — ${mo}mo until ${next}-yr milestone (sold ${saleDateStr})`:`${Math.round(yrs*10)/10} yrs since last sale (sold ${saleDateStr})`});
+    }
+  } else {
+    details.push({cat:'Hold Period',label:'No sale date on record'});
+  }
+
+  // ── LOAN MATURITY ── (Trepp takes priority when available)
+  const STALE = -365;
+  let tMat = t ? parseD(t.maturity_date) : null;
+  // If Trepp has periods_past_maturity, it's already past due
+  const periodsPast = t ? parseFloat(t.periods_past_maturity)||0 : 0;
+  const remainTerm = t ? parseFloat(t.remaining_term)||null : null;
+
+  if(tMat && daysUntil(tMat) > STALE){
+    const days=daysUntil(tMat);
+    const lender=t.originator||t.source||'';
+    const bal=fmtMoney(t.current_balance);
+    const lenderStr=lender?` (${lender}${bal?', '+bal:''})`:bal?` (${bal})`:'';
+    if(periodsPast>0){
+      cats.loanMaturity=Math.max(cats.loanMaturity,95);
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past maturity${lenderStr} — matured ${fmtDate(tMat)}`,trepp:true});
+    } else if(days<0){
+      cats.loanMaturity=Math.max(cats.loanMaturity,80);
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Loan matured ${Math.abs(Math.round(days))} days ago${lenderStr}`,trepp:true});
+    } else if(days<90){
+      cats.loanMaturity=Math.max(cats.loanMaturity,95);
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days)} days — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
+    } else if(days<180){
+      cats.loanMaturity=Math.max(cats.loanMaturity,85);
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ${Math.round(days/30)} months — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
+    } else if(days<365){
+      cats.loanMaturity=Math.max(cats.loanMaturity,70);
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures within 1 year — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
+    } else if(days<730){
+      cats.loanMaturity=Math.max(cats.loanMaturity,45);
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Matures in ~${Math.round(days/365)} yrs — ${fmtDate(tMat)}${lenderStr}`,trepp:true});
+    } else {
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: Maturity ${fmtDate(tMat)}${lenderStr}`,trepp:true});
+    }
+    if(remainTerm!==null){
+      details.push({cat:'Loan Maturity',label:`⬡ Trepp: ${remainTerm} months remaining term`,trepp:true});
+    }
+  } else if(!t){
+    // Fall back to Reonomy mortgage dates
+    const mats=[
+      {date:parseD(p.mortgage_maturity_date),amt:parseFloat(p.mortgage_amount)||0,lender:p.mortgage_standardized_name||p.mortgage_recorded_name,name:'Primary loan'},
+      {date:parseD(p.mortgage2_maturity_date),amt:parseFloat(p.mortgage2_amount)||0,lender:p.mortgage2_standardized_name||p.mortgage2_recorded_name,name:'Second loan'},
+    ].filter(m=>m.date&&daysUntil(m.date)>STALE);
+    const fut=mats.filter(m=>daysUntil(m.date)>0).sort((a,b)=>daysUntil(a.date)-daysUntil(b.date));
+    const pas=mats.filter(m=>daysUntil(m.date)<=0).sort((a,b)=>daysUntil(b.date)-daysUntil(a.date));
+    const act=fut.length?fut:pas;
+    if(act.length===0) details.push({cat:'Loan Maturity',label:'No active mortgage maturity date on record'});
+    for(const {date,name,lender,amt} of act.slice(0,1)){
+      const days=daysUntil(date);
+      const ls=lender?` (${lender}${amt?' — '+fmtMoney(amt):''})`:''
+      const ds=fmtDate(date); let s=0,lbl='';
+      if(days<0&&days>-180){s=80;lbl=`${name}${ls} matured ${Math.abs(Math.round(days))} days ago — ${ds}`;}
+      else if(days<0&&days>-365){s=60;lbl=`${name}${ls} matured ${Math.abs(Math.round(days/30))} months ago — ${ds}`;}
+      else if(days<90){s=95;lbl=`${name}${ls} matures in ${Math.round(days)} days — ${ds}`;}
+      else if(days<180){s=85;lbl=`${name}${ls} matures in ${Math.round(days/30)} months — ${ds}`;}
+      else if(days<365){s=70;lbl=`${name}${ls} matures within 1 year — ${ds}`;}
+      else if(days<730){s=45;lbl=`${name}${ls} matures in ~${Math.round(days/365)} yrs — ${ds}`;}
+      else if(days<1095){s=20;lbl=`${name}${ls} matures in ~${Math.round(days/365)} yrs — ${ds}`;}
+      if(s>cats.loanMaturity) cats.loanMaturity=s;
+      if(lbl) details.push({cat:'Loan Maturity',label:lbl});
+    }
+  } else {
+    details.push({cat:'Loan Maturity',label:'No active Trepp loan maturity on record'});
+  }
+
+  // ── DISTRESS (additive: Reonomy preforeclosure + Trepp signals) ──
+  // Reonomy preforeclosure
+  const prefoActive=p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True';
+  if(prefoActive){
+    cats.distress=100;
+    const rd=fmtDate(p.preforeclosure_recording_date),pl=p.preforeclosure_plaintiff_1?` — Filed by: ${p.preforeclosure_plaintiff_1}`:'';
+    const dt=p.preforeclosure_doc_type?` (${p.preforeclosure_doc_type})`:'',dc=p.preforeclosure_deed_category?` — ${p.preforeclosure_deed_category}`:'';
+    details.push({cat:'Distress',label:`🚨 Active preforeclosure${dt}${dc}${rd?', recorded '+rd:''}${pl}`});
+  }
+  const auction=parseD(p.preforeclosure_auction_date);
+  if(auction){
+    const d=daysUntil(auction);
+    const tm=p.preforeclosure_auction_time?` at ${p.preforeclosure_auction_time}`:'';
+    const loc=p.preforeclosure_street_address_of_auction_call?` — ${p.preforeclosure_street_address_of_auction_call}`:'';
+    const tr=p.preforeclosure_trustee_name?` — Trustee: ${p.preforeclosure_trustee_name}`:'';
+    if(d>0&&d<180){cats.distress=Math.max(cats.distress,90);details.push({cat:'Distress',label:`Foreclosure auction in ${Math.round(d)} days (${fmtDate(auction)}${tm})${loc}${tr}`});}
+    else if(d>0){cats.distress=Math.max(cats.distress,50);details.push({cat:'Distress',label:`Foreclosure auction scheduled: ${fmtDate(auction)}${tm}${loc}`});}
+    else if(d<=0){cats.distress=Math.max(cats.distress,60);details.push({cat:'Distress',label:`Foreclosure auction date passed (${fmtDate(auction)})${tr}`});}
+  }
+  if(p.preforeclosure_final_judgement_amount&&parseFloat(p.preforeclosure_final_judgement_amount)>0){
+    cats.distress=Math.max(cats.distress,70);
+    details.push({cat:'Distress',label:`Final judgement: ${fmtMoney(p.preforeclosure_final_judgement_amount)}${p.preforeclosure_plaintiff_1?' — Plaintiff: '+p.preforeclosure_plaintiff_1:''}`});
+  }
+
+  // Trepp distress signals (additive)
+  if(t){
+    const delinq=(t.delinquency_status||'').toLowerCase();
+    const watchlist=(t.watchlist_status||'').toLowerCase();
+    const specServ=(t.spec_serv_status||'').toLowerCase();
+    const dscr=parseFloat(t.dscr_noi)||null;
+    const ltv=parseFloat(t.ltv)||null;
+    const modLoan=(t.modified_loan||'').toLowerCase();
+    const timesDelinq=parseFloat(t.num_times_known_delinquent_last_12_months)||0;
+    const reoDate=t.reo_date&&t.reo_date!=='-';
+    const bankrupt=t.bankruptcy_date&&t.bankruptcy_date!=='-';
+
+    if(specServ==='yes'){
+      cats.distress=Math.max(cats.distress,100);
+      const reason=t.special_servicer_transfer_reason&&t.special_servicer_transfer_reason!=='-'?` — Reason: ${t.special_servicer_transfer_reason}`:'';
+      const ss=t.special_servicer&&t.special_servicer!=='-'?` (${t.special_servicer})`:'';
+      details.push({cat:'Distress',label:`⬡ Trepp: 🚨 In special servicing${ss}${reason}`,trepp:true});
+    }
+    if(reoDate){
+      cats.distress=Math.max(cats.distress,100);
+      details.push({cat:'Distress',label:`⬡ Trepp: REO — became real estate owned ${fmtDate(t.reo_date)}`,trepp:true});
+    }
+    if(bankrupt){
+      cats.distress=Math.max(cats.distress,95);
+      details.push({cat:'Distress',label:`⬡ Trepp: Bankruptcy filed ${fmtDate(t.bankruptcy_date)}`,trepp:true});
+    }
+    if(delinq&&delinq!=='current'&&delinq!=='-'){
+      cats.distress=Math.max(cats.distress,90);
+      details.push({cat:'Distress',label:`⬡ Trepp: Loan delinquent — status: ${t.delinquency_status}`,trepp:true});
+    }
+    if(timesDelinq>0){
+      cats.distress=Math.max(cats.distress,Math.min(75,50+timesDelinq*10));
+      details.push({cat:'Distress',label:`⬡ Trepp: Delinquent ${timesDelinq}x in last 12 months`,trepp:true});
+    }
+    if(watchlist==='yes'){
+      cats.distress=Math.max(cats.distress,65);
+      const wd=t.watchlist_date&&t.watchlist_date!=='-'?` since ${fmtDate(t.watchlist_date)}`:'';
+      details.push({cat:'Distress',label:`⬡ Trepp: On watchlist${wd}`,trepp:true});
+    }
+    if(dscr!==null&&dscr>0){
+      if(dscr<1.0){cats.distress=Math.max(cats.distress,80);details.push({cat:'Distress',label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — loan not covering debt service (below 1.0)`,trepp:true});}
+      else if(dscr<1.25){cats.distress=Math.max(cats.distress,50);details.push({cat:'Distress',label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — stressed (below 1.25)`,trepp:true});}
+      else{details.push({cat:'Distress',label:`⬡ Trepp: DSCR ${dscr.toFixed(2)} — healthy`,trepp:true});}
+    }
+    if(ltv!==null&&ltv>0){
+      if(ltv>90){cats.distress=Math.max(cats.distress,60);details.push({cat:'Distress',label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — critically overleveraged`,trepp:true});}
+      else if(ltv>80){cats.distress=Math.max(cats.distress,35);details.push({cat:'Distress',label:`⬡ Trepp: LTV ${ltv.toFixed(1)}% — overleveraged`,trepp:true});}
+      else{details.push({cat:'Distress',label:`⬡ Trepp: LTV ${ltv.toFixed(1)}%`,trepp:true});}
+    }
+    if(modLoan==='yes'){
+      cats.distress=Math.max(cats.distress,40);
+      const mt=t.modification_type_servicer&&t.modification_type_servicer!=='-'?` (${t.modification_type_servicer})`:'';
+      details.push({cat:'Distress',label:`⬡ Trepp: Loan has been modified${mt}`,trepp:true});
+    }
+    if(periodsPast>0&&!tMat){
+      cats.distress=Math.max(cats.distress,85);
+      details.push({cat:'Distress',label:`⬡ Trepp: ${Math.round(periodsPast)} period${periodsPast!==1?'s':''} past maturity`,trepp:true});
+    }
+    if(!prefoActive&&!auction&&!p.preforeclosure_final_judgement_amount&&specServ!=='yes'&&delinq==='current'&&watchlist!=='yes'){
+      details.push({cat:'Distress',label:`⬡ Trepp: Loan current — no distress signals`,trepp:true});
+    }
+  } else {
+    if(!prefoActive&&!auction&&!p.preforeclosure_final_judgement_amount&&!p.preforeclosure_recording_date){
+      details.push({cat:'Distress',label:'No distress signals on record (no Trepp data for this property)'});
+    }
+    if(p.preforeclosure_recording_date&&!prefoActive&&!auction&&!(p.preforeclosure_final_judgement_amount>0)){
+      cats.distress=Math.max(cats.distress,40);
+      details.push({cat:'Distress',label:`Preforeclosure filing on record${p.preforeclosure_doc_type?' ('+p.preforeclosure_doc_type+')':''} — ${fmtDate(p.preforeclosure_recording_date)}`});
+    }
+  }
+
+  // ── MARKET SIGNALS ──
+  // Use Trepp occupancy if available, else CoStar vacancy
+  const occ=t?parseFloat(t.occupancy_pct)||null:null;
+  const vacancy=parseFloat(p.vacancy)||null;
+  if(occ!==null){
+    const vEq=100-occ;
+    if(vEq>20){cats.marketSignals=Math.max(cats.marketSignals,70);details.push({cat:'Market',label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% (vacancy ${vEq.toFixed(1)}%) — high vacancy`});}
+    else if(vEq>10){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}%`,trepp:true});}
+    else{details.push({cat:'Market',label:`⬡ Trepp: Occupancy ${occ.toFixed(1)}% — healthy`,trepp:true});}
+  } else if(vacancy!==null){
+    if(vacancy>20){cats.marketSignals=Math.max(cats.marketSignals,70);details.push({cat:'Market',label:`CoStar vacancy: ${vacancy.toFixed(1)}% — high`});}
+    else if(vacancy>10){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`CoStar vacancy: ${vacancy.toFixed(1)}% — elevated`});}
+    else{details.push({cat:'Market',label:`CoStar vacancy: ${vacancy.toFixed(1)}%`});}
+  }
+  // Cap rate
+  const capRate=t?parseFloat(t.most_recent_implied_cap_rate_noi)||null:parseFloat(p.actual_cap_rate)||null;
+  if(capRate!==null&&capRate>0){
+    const src=t?'⬡ Trepp':'CoStar';
+    if(capRate<4.5){cats.marketSignals=Math.max(cats.marketSignals,35);details.push({cat:'Market',label:`${src}: Implied cap rate ${capRate.toFixed(2)}% — compressed`,trepp:!!t});}
+    else{details.push({cat:'Market',label:`${src}: Cap rate ${capRate.toFixed(2)}%`,trepp:!!t});}
+  }
+  // Trepp debt yield
+  if(t&&t.debt_yield_noi){
+    const dy=parseFloat(t.debt_yield_noi);
+    if(!isNaN(dy)&&dy>0&&dy<6){cats.marketSignals=Math.max(cats.marketSignals,40);details.push({cat:'Market',label:`⬡ Trepp: Debt yield ${dy.toFixed(2)}% — compressed`,trepp:true});}
+  }
+  // Age/condition
+  const yrB=parseFloat(p.year_built||t?.year_built);
+  if(!isNaN(yrB)){
+    const age=new Date().getFullYear()-yrB;
+    if(age>60&&!p.year_renovated&&!t?.renovation_year){cats.marketSignals=Math.max(cats.marketSignals,25);details.push({cat:'Market',label:`Aging building: built ${Math.round(yrB)} (${age} yrs), no renovation on record`});}
+    else if(p.year_renovated){details.push({cat:'Market',label:`Built ${Math.round(yrB)}, renovated ${Math.round(p.year_renovated)}`});}
+  }
+  // Data source summary
+  const sources=[];
+  if(p._hasCostar) sources.push(`CoStar (${p._matchMethod})`);
+  if(t) sources.push('Trepp');
+  details.push({cat:'Market',label:sources.length?`Data sources: ${sources.join(', ')}`:'Data source: Reonomy only'});
+
+  // ── WEIGHTED FINAL ──
+  const w=getWeights();
+  const wTotal=w.holdPeriod+w.loanMaturity+w.distress+w.marketSignals;
+  let score=0;
+  if(wTotal>0) score=Math.round((cats.holdPeriod*w.holdPeriod+cats.loanMaturity*w.loanMaturity+cats.distress*w.distress+cats.marketSignals*w.marketSignals)/wTotal);
+  const tier=score>=70?'hot':score>=50?'warm':score>=30?'watch':'cold';
+  return {score,tier,details,cats};
+}
+
+// ─── DATA FETCHING ────────────────────────────────────────────────────────────
+async function fetchAll(table, filter){
+  const PAGE=1000; let all=[],from=0,done=false;
   while(!done){
-    let q = db.from(table).select('*').range(from, from+PAGE-1);
-    if(filters) for(const [col,val] of Object.entries(filters)) q = q.ilike(col,val);
-    const { data, error } = await q;
-    if(error || !data || data.length === 0){ done=true; break; }
-    all = all.concat(data);
-    if(data.length < PAGE) done = true;
-    else from += PAGE;
+    let q=db.from(table).select('*').range(from,from+PAGE-1);
+    if(filter) for(const [col,val] of Object.entries(filter)) q=q.ilike(col,val);
+    const {data,error}=await q;
+    if(error||!data||!data.length){done=true;break;}
+    all=all.concat(data);
+    if(data.length<PAGE) done=true; else from+=PAGE;
   }
   return all;
 }
@@ -687,169 +604,160 @@ async function loadData(){
   setLoading(true);
   document.getElementById('loadingList').style.display='block';
 
-  // Fetch ALL Reonomy multifamily properties (paginated past 1000 limit)
-  const props = await fetchAll('properties', {'property_type':'%multifamily%'});
+  // Fetch all three sources in parallel
+  const [props, trepps, costarArr] = await Promise.all([
+    fetchAll('properties',{'property_type':'%multifamily%'}),
+    fetchAll('trepp', null),
+    fetchAll('costar2', null),
+  ]);
 
-  // Fetch ALL CoStar records
-  const costar = await fetchAll('costar2', null);
+  // ── Build Trepp address index ──
+  const treppByAddr={};
+  (trepps||[]).forEach(t=>{
+    const ak=normalizeAddr((t.address||'')+(t.city?' '+t.city:''));
+    if(ak) treppByAddr[ak]=t;
+    // Also index by address only
+    const ak2=normalizeAddr(t.address||'');
+    if(ak2&&!treppByAddr[ak2]) treppByAddr[ak2]=t;
+  });
 
-  // Match and merge -- ALL Reonomy properties are included
-  // Step 1: normalized address match (primary -- most precise)
-  // Step 2: coordinate match within 20 meters (tight fallback for address format differences)
-  let matchCount = 0;
-  let coordMatchCount = 0;
-  let addrMatchCount = 0;
-
-  // Build CoStar lookup indexes
-  const costarByAddr = {};
-  const costarByCoord = {};
-  (costar||[]).forEach(c=>{
-    // Address index -- primary
-    const ak = normalizeAddr(c.property_address);
-    if(ak) costarByAddr[ak] = c;
-    // Coordinate index -- tight fallback (20m radius needs ~0.001 degree bucket)
-    const lat = parseFloat(c.latitude), lng = parseFloat(c.longitude);
-    if(!isNaN(lat) && !isNaN(lng)){
-      // Use finer bucket (1000x instead of 100x) for tighter matching
-      const bucket = `${Math.round(lat*1000)}_${Math.round(lng*1000)}`;
-      if(!costarByCoord[bucket]) costarByCoord[bucket] = [];
-      costarByCoord[bucket].push({...c, _lat:lat, _lng:lng});
+  // ── Build CoStar address + coord indexes ──
+  const costarByAddr={}, costarByCoord={};
+  (costarArr||[]).forEach(c=>{
+    const ak=normalizeAddr(c.property_address||'');
+    if(ak) costarByAddr[ak]=c;
+    const lat=parseFloat(c.latitude),lng=parseFloat(c.longitude);
+    if(!isNaN(lat)&&!isNaN(lng)){
+      const bucket=`${Math.round(lat*1000)}_${Math.round(lng*1000)}`;
+      if(!costarByCoord[bucket]) costarByCoord[bucket]=[];
+      costarByCoord[bucket].push({...c,_lat:lat,_lng:lng});
     }
   });
 
-  allData = (props||[]).map(p=>{
-    const pLat = parseFloat(p.latitude), pLng = parseFloat(p.longitude);
-    let costarMatch = null;
-    let matchMethod = null;
+  let teppMatchCount=0, costarMatchCount=0;
+  const usedTreppIds=new Set();
 
-    // Step 1: Address match first (most reliable)
-    const ak = normalizeAddr(p.address_line_1||'');
-    if(ak && costarByAddr[ak]){
-      costarMatch = costarByAddr[ak];
-      matchMethod = 'addr';
-    }
+  // ── Process Reonomy properties ──
+  allData=(props||[]).map(p=>{
+    // Match Trepp by address
+    const pak=normalizeAddr((p.address_line_1||'')+(p.address_city?' '+p.address_city:''));
+    const pak2=normalizeAddr(p.address_line_1||'');
+    const tMatch=treppByAddr[pak]||treppByAddr[pak2]||null;
+    if(tMatch){teppMatchCount++;usedTreppIds.add(tMatch.id);}
 
-    // Step 2: Coordinate fallback -- only if no address match, tight 20m radius
-    if(!costarMatch && !isNaN(pLat) && !isNaN(pLng)){
-      const bLat = Math.round(pLat*1000), bLng = Math.round(pLng*1000);
-      let bestDist = Infinity;
-      // Check 3x3 grid of fine buckets
-      for(let dlat=-1; dlat<=1; dlat++){
-        for(let dlng=-1; dlng<=1; dlng++){
-          const bucket = `${bLat+dlat}_${bLng+dlng}`;
-          const candidates = costarByCoord[bucket] || [];
-          for(const c of candidates){
-            const dist = haversineMeters(pLat, pLng, c._lat, c._lng);
-            if(dist < 20 && dist < bestDist){ // within 20 meters only
-              bestDist = dist;
-              costarMatch = c;
-              matchMethod = `coord(${Math.round(dist)}m)`;
-            }
+    // Match CoStar: address first, then coord
+    const cak=normalizeAddr(p.address_line_1||'');
+    let cMatch=costarByAddr[cak]||null, cMethod=cMatch?'addr':null;
+    if(!cMatch){
+      const pLat=parseFloat(p.latitude),pLng=parseFloat(p.longitude);
+      if(!isNaN(pLat)&&!isNaN(pLng)){
+        const bLat=Math.round(pLat*1000),bLng=Math.round(pLng*1000);
+        let bestDist=Infinity;
+        for(let dl=-1;dl<=1;dl++) for(let dg=-1;dg<=1;dg++){
+          const bucket=`${bLat+dl}_${bLng+dg}`;
+          for(const c of costarByCoord[bucket]||[]){
+            const dist=haversineMeters(pLat,pLng,c._lat,c._lng);
+            if(dist<20&&dist<bestDist){bestDist=dist;cMatch=c;cMethod=`coord(${Math.round(dist)}m)`;}
           }
         }
       }
     }
+    if(cMatch) costarMatchCount++;
 
-    if(costarMatch){
-      matchCount++;
-      if(matchMethod==='addr') addrMatchCount++;
-      else coordMatchCount++;
-    }
-
-    const merged = costarMatch ? {
+    // Build merged record -- CoStar sale price/date takes priority, Trepp loan data is separate
+    const merged={
       ...p,
-      // CoStar is more reliable for sale price/date -- use it when available
-      sale_amount: costarMatch.sale_price || p.sale_amount,
-      sale_recorded_date: costarMatch.sale_date || p.sale_recorded_date,
-      sales_price_per_sf: costarMatch.price_per_sf || p.sales_price_per_sf,
-      price_per_unit: costarMatch.price_per_unit || p.price_per_unit,
-      // Keep original Reonomy sale for reference
+      sale_amount: cMatch?.sale_price||p.sale_amount,
+      sale_recorded_date: cMatch?.sale_date||p.sale_recorded_date,
+      sales_price_per_sf: cMatch?.price_per_sf||p.sales_price_per_sf,
+      price_per_unit: cMatch?.price_per_unit||p.price_per_unit,
+      vacancy: cMatch?.vacancy||p.vacancy,
+      actual_cap_rate: cMatch?.actual_cap_rate||p.actual_cap_rate,
+      building_class: cMatch?.building_class,
+      submarket_name: cMatch?.submarket_name,
+      buyer_true_company: cMatch?.buyer_true_company,
+      seller_true_company: cMatch?.seller_true_company,
       _reonomy_sale_amount: p.sale_amount,
-      // CoStar-only augmentation fields
-      vacancy: costarMatch.vacancy || p.vacancy,
-      actual_cap_rate: costarMatch.actual_cap_rate || p.actual_cap_rate,
-      pro_forma_cap_rate: costarMatch.pro_forma_cap_rate,
-      building_class: costarMatch.building_class,
-      submarket_name: costarMatch.submarket_name,
-      buyer_true_company: costarMatch.buyer_true_company,
-      seller_true_company: costarMatch.seller_true_company,
-      _costar: costarMatch,
-      _matchMethod: matchMethod,
-    } : p;
-    merged._hasCostar = !!costarMatch;
-
-    const {score,tier,details,cats} = scoreProperty(merged);
-    return {...merged, _score:score, _tier:tier, _details:details, _cats:cats};
+      _hasCostar: !!cMatch,
+      _matchMethod: cMethod,
+      _costar: cMatch||null,
+      _trepp: tMatch||null,
+      _source: tMatch?'both':'reonomy',
+    };
+    const {score,tier,details,cats}=scoreProperty(merged);
+    return {...merged,_score:score,_tier:tier,_details:details,_cats:cats};
   });
 
-  console.log(`Loaded ${allData.length} properties | CoStar matches: ${matchCount} (${addrMatchCount} by address, ${coordMatchCount} by coords)`);
-  document.getElementById('matchInfo').textContent =
-    `${allData.length.toLocaleString()} properties · ${matchCount} CoStar matches (${addrMatchCount} addr, ${coordMatchCount} coord)`;
+  // ── Add unmatched Trepp-only entries ──
+  const treppOnly=(trepps||[]).filter(t=>!usedTreppIds.has(t.id));
+  treppOnly.forEach(t=>{
+    const pseudo={
+      id:`trepp_${t.id}`,
+      address_line_1: t.address,
+      address_city: t.city,
+      address_state: t.state,
+      address_full: [t.address,t.city,t.state].filter(Boolean).join(', '),
+      property_type: t.normalized_property_type||t.property_type,
+      property_subtype: t.trepp_subtype,
+      year_built: t.year_built,
+      total_units: t.number_of_units,
+      latitude: null, longitude: null,
+      _trepp: t,
+      _hasCostar: false,
+      _costar: null,
+      _source: 'trepp',
+      _matchMethod: null,
+    };
+    const {score,tier,details,cats}=scoreProperty(pseudo);
+    allData.push({...pseudo,_score:score,_tier:tier,_details:details,_cats:cats});
+  });
 
+  const total=allData.length;
+  document.getElementById('totalBadge').textContent=total.toLocaleString();
+  document.getElementById('matchInfo').textContent=`${total} props · ${teppMatchCount} Trepp matches · ${costarMatchCount} CoStar matches · ${treppOnly.length} Trepp-only`;
   setLoading(false);
   document.getElementById('loadingList').style.display='none';
   applyFilters();
   initMap();
 }
 
-function haversineMeters(lat1, lng1, lat2, lng2){
-  const R = 6371000;
-  const dLat = (lat2-lat1)*Math.PI/180;
-  const dLng = (lng2-lng1)*Math.PI/180;
-  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
-    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
-    Math.sin(dLng/2)*Math.sin(dLng/2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-function normalizeAddr(s){
-  return (s||'').toLowerCase().trim()
-    .replace(/\s+/g,' ')
-    .replace(/\bstreet\b/g,'st').replace(/\bavenue\b/g,'ave')
-    .replace(/\bboulevard\b/g,'blvd').replace(/\bdrive\b/g,'dr')
-    .replace(/\broad\b/g,'rd').replace(/\bcourt\b/g,'ct')
-    .replace(/\bnorthwest\b/g,'nw').replace(/\bnortheast\b/g,'ne')
-    .replace(/\bsouthwest\b/g,'sw').replace(/\bsoutheast\b/g,'se')
-    .replace(/[.,#]/g,'').trim();
-}
-
-// ─── FILTERING & SORTING ────────────────────────────────────────────────────
+// ─── FILTERING & SORTING ──────────────────────────────────────────────────────
 function applyFilters(){
-  let data = [...allData];
+  let data=[...allData];
+  // Search
   if(searchQ){
     const q=searchQ.toLowerCase();
     data=data.filter(p=>
-      (p.address_line_1||p.property_address||'').toLowerCase().includes(q)||
+      (p.address_line_1||p.address||'').toLowerCase().includes(q)||
+      (p.address_city||p.city||'').toLowerCase().includes(q)||
       (p.reported_owner_name||'').toLowerCase().includes(q)||
-      (p.address_city||'').toLowerCase().includes(q)||
-      (p.msa_name||'').toLowerCase().includes(q)||
-      (p.contact_name||'').toLowerCase().includes(q)
+      (p._trepp?.property_name||'').toLowerCase().includes(q)||
+      (p._trepp?.loan_name||'').toLowerCase().includes(q)||
+      (p._trepp?.originator||'').toLowerCase().includes(q)||
+      (p._trepp?.trepp_submarket||'').toLowerCase().includes(q)||
+      (p.submarket_name||'').toLowerCase().includes(q)
     );
   }
+  // Tier
   if(activeTier!=='all') data=data.filter(p=>p._tier===activeTier);
+  // Source
+  if(activeSrc==='trepp') data=data.filter(p=>p._trepp);
+  else if(activeSrc==='trepp-only') data=data.filter(p=>p._source==='trepp');
 
   // Sort
-  const sort = document.getElementById('sortSelect').value;
+  const sort=document.getElementById('sortSelect').value;
   if(sort==='score') data.sort((a,b)=>b._score-a._score);
   else if(sort==='maturity'){
-    const getBestMatDate = p => {
-      const STALE = -365*24*3600*1000;
-      const today = new Date();
-      const m1 = parseD(p.mortgage_maturity_date);
-      const m2 = parseD(p.mortgage2_maturity_date);
-      const valid = [m1,m2].filter(d => d && (d-today) > STALE);
-      if(!valid.length) return null;
-      const future = valid.filter(d => d > today);
-      if(future.length) return future.reduce((a,b)=>a<b?a:b); // soonest future first
-      return valid.reduce((a,b)=>a>b?a:b); // most recent past
+    const getBest=p=>{
+      const STALE=-365*24*3600*1000,now=new Date();
+      const tm=p._trepp?parseD(p._trepp.maturity_date):null;
+      const m1=parseD(p.mortgage_maturity_date),m2=parseD(p.mortgage2_maturity_date);
+      const candidates=[tm,m1,m2].filter(d=>d&&(d-now)>STALE);
+      if(!candidates.length) return null;
+      const fut=candidates.filter(d=>d>now);
+      return fut.length?fut.reduce((a,b)=>a<b?a:b):candidates.reduce((a,b)=>a>b?a:b);
     };
-    data.sort((a,b)=>{
-      const da=getBestMatDate(a), db=getBestMatDate(b);
-      if(!da&&!db) return 0;
-      if(!da) return 1;  // no maturity date goes to bottom
-      if(!db) return -1;
-      return da-db; // soonest maturity at top
-    });
+    data.sort((a,b)=>{const da=getBest(a),db=getBest(b);if(!da&&!db)return 0;if(!da)return 1;if(!db)return -1;return da-db;});
   }
   else if(sort==='hold'){
     data.sort((a,b)=>{
@@ -858,48 +766,48 @@ function applyFilters(){
       return yb-ya;
     });
   }
-  else if(sort==='sale_amount') data.sort((a,b)=>(parseFloat(b.sale_amount||b.sale_price)||0)-(parseFloat(a.sale_amount||a.sale_price)||0));
+  else if(sort==='sale_amount') data.sort((a,b)=>(parseFloat(b.sale_amount)||0)-(parseFloat(a.sale_amount)||0));
+  else if(sort==='balance'){
+    data.sort((a,b)=>{
+      const ba=parseFloat(a._trepp?.current_balance)||0;
+      const bb=parseFloat(b._trepp?.current_balance)||0;
+      return bb-ba;
+    });
+  }
 
-  filtered = data;
+  filtered=data;
   renderList();
   renderMap();
-  document.getElementById('totalBadge').textContent = allData.length.toLocaleString();
-  document.getElementById('tbCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${allData.length.toLocaleString()} properties`;
+  document.getElementById('tbCount').textContent=`Showing ${filtered.length.toLocaleString()} of ${allData.length.toLocaleString()}`;
 }
 
-function resort(){ applyFilters(); }
-function setTier(t){
-  activeTier=t;
-  document.querySelectorAll('.tier-btn').forEach(b=>b.classList.toggle('active',b.dataset.tier===t));
-  applyFilters();
-}
+document.getElementById('searchInput').addEventListener('input',e=>{searchQ=e.target.value;applyFilters();});
+function setTier(t){activeTier=t;document.querySelectorAll('.tier-btn').forEach(b=>b.classList.toggle('active',b.dataset.tier===t));applyFilters();}
+function setSrc(s){activeSrc=s;document.querySelectorAll('.src-btn').forEach(b=>b.classList.toggle('active',b.dataset.src===s));applyFilters();}
 
-document.getElementById('searchInput').addEventListener('input',e=>{
-  searchQ=e.target.value; applyFilters();
-});
-
-// ─── LIST RENDERING ─────────────────────────────────────────────────────────
+// ─── LIST RENDERING ──────────────────────────────────────────────────────────
 function renderList(){
-  const panel = document.getElementById('listPanel');
-  if(!filtered.length){
-    panel.innerHTML='<div class="empty-state"><div class="empty-icon">🏢</div><div>No properties match your filters</div></div>';
-    return;
-  }
-  panel.innerHTML = filtered.map(p=>propCard(p)).join('');
+  const panel=document.getElementById('listPanel');
+  if(!filtered.length){panel.innerHTML='<div class="empty-state"><div style="font-size:32px;margin-bottom:12px">🏢</div>No properties match your filters</div>';return;}
+  panel.innerHTML=filtered.map(p=>propCard(p)).join('');
 }
 
 function propCard(p){
-  const addr = p.address_line_1||p.property_address||'Unknown Address';
-  const city = p.address_city||p.portfolio_city||'';
-  const state = p.address_state||p.portfolio_state||'';
-  const sub = [city,state].filter(Boolean).join(', ');
-  const chips = buildChips(p);
-  const sel = p.id===selectedId?'selected':'';
-  return `<div class="prop-card ${sel}" onclick="selectProperty('${p.id}')">
+  const addr=p.address_line_1||p.address||'Unknown Address';
+  const city=[p.address_city||p.city,p.address_state||p.state].filter(Boolean).join(', ');
+  const subtype=p.property_subtype||p._trepp?.trepp_subtype||'';
+  const srcLabel=p._source==='trepp'?'Trepp only':p._trepp?'Reonomy + Trepp':'Reonomy';
+  const srcCls=p._source==='trepp'?'trepp':p._trepp?'both':'reonomy';
+  const chips=buildChips(p);
+  return `<div class="prop-card${p.id===selectedId?' selected':''}" onclick="selectProperty('${p.id}')">
     <div class="pc-top">
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="pc-address">${addr}</div>
-        ${sub?`<div class="pc-sub">${sub}${p.property_subtype?' · '+p.property_subtype:''}</div>`:''}
+        <div class="pc-sub">
+          ${city?`<span>${city}</span>`:''}
+          ${subtype?`<span>· ${subtype}</span>`:''}
+          <span class="pc-src-badge ${srcCls}">${srcLabel}</span>
+        </div>
       </div>
       <div class="score-badge ${p._tier}">${p._score}</div>
     </div>
@@ -909,197 +817,134 @@ function propCard(p){
 
 function buildChips(p){
   const chips=[];
-  const STALE = -365; // ignore maturity dates more than 1 year in the past
+  const STALE=-365*24*3600*1000, now=new Date();
+  const t=p._trepp;
 
-  // Most recent sale date
-  const sd1 = parseD(p.sale_recorded_date||p.sale_date);
-  const sd2 = parseD(p.sale2_recorded_date);
-  const sd = (sd1&&sd2) ? (sd1>sd2?sd1:sd2) : (sd1||sd2);
+  // Trepp distress chips (highest priority)
+  if(t){
+    if((t.spec_serv_status||'').toLowerCase()==='yes') chips.push({cls:'trepp-distress',label:'⬡ Special Servicer'});
+    if((t.reo_date||'')!=='-'&&t.reo_date) chips.push({cls:'trepp-distress',label:'⬡ REO'});
+    const delinq=(t.delinquency_status||'').toLowerCase();
+    if(delinq&&delinq!=='current'&&delinq!=='-') chips.push({cls:'trepp-distress',label:`⬡ ${t.delinquency_status}`});
+    if((t.watchlist_status||'').toLowerCase()==='yes') chips.push({cls:'trepp-distress',label:'⬡ Watchlist'});
+    const dscr=parseFloat(t.dscr_noi);
+    if(!isNaN(dscr)&&dscr>0&&dscr<1.25) chips.push({cls:'trepp-distress',label:`⬡ DSCR ${dscr.toFixed(2)}`});
+  }
 
-  // Find the most relevant non-stale maturity date
-  const mat1 = parseD(p.mortgage_maturity_date);
-  const mat2 = parseD(p.mortgage2_maturity_date);
-  const mat1Days = mat1 ? daysUntil(mat1) : null;
-  const mat2Days = mat2 ? daysUntil(mat2) : null;
-  const mat1Valid = mat1Days !== null && mat1Days > STALE;
-  const mat2Valid = mat2Days !== null && mat2Days > STALE;
+  // Reonomy preforeclosure
+  if(p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True')
+    chips.push({cls:'distress',label:'⚠ Preforeclosure'});
 
-  // Pick best maturity to show: prefer future, then most recent past
-  let bestMat = null;
-  if(mat1Valid && mat2Valid){
-    bestMat = (mat1Days >= 0 && mat2Days < 0) ? mat1 :
-              (mat2Days >= 0 && mat1Days < 0) ? mat2 :
-              (mat1Days >= 0) ? (mat1Days < mat2Days ? mat1 : mat2) : // both future: pick soonest
-              (mat1Days > mat2Days ? mat1 : mat2); // both past: pick most recent
-  } else if(mat1Valid) bestMat = mat1;
-  else if(mat2Valid) bestMat = mat2;
-
-  const prefoActive = p.preforeclosure_active_flag===true||p.preforeclosure_active_flag==='true'||p.preforeclosure_active_flag==='True';
-  if(prefoActive) chips.push({cls:'distress',label:'⚠ Preforeclosure'});
-
+  // Best maturity chip
+  const matCandidates=[
+    t?parseD(t.maturity_date):null,
+    parseD(p.mortgage_maturity_date),
+    parseD(p.mortgage2_maturity_date),
+  ].filter(d=>d&&(d-now)>STALE);
+  const futureMats=matCandidates.filter(d=>d>now);
+  const bestMat=futureMats.length?futureMats.reduce((a,b)=>a<b?a:b):matCandidates.reduce((a,b)=>a>b?a:b,null);
   if(bestMat){
-    const d = daysUntil(bestMat);
-    if(d < 0) chips.push({cls:'maturity',label:`Mat. ${fmtDate(bestMat)} (past)`});
-    else chips.push({cls:'maturity',label:`Mat. ${fmtDate(bestMat)}`});
+    const d=daysUntil(bestMat);
+    const src=t&&parseD(t.maturity_date)===bestMat?'⬡ ':'';
+    chips.push({cls:'maturity',label:`${src}Mat. ${fmtDate(bestMat)}${d<0?' (past)':''}`});
   }
 
-  if(sd){
-    const yrs = yearsSince(sd);
-    chips.push({cls:'hold',label:`${Math.round(yrs*10)/10} yr hold`});
-  }
+  // Hold period chip
+  const sd1=parseD(p.sale_recorded_date||p.sale_date),sd2=parseD(p.sale2_recorded_date);
+  const sd=(sd1&&sd2)?(sd1>sd2?sd1:sd2):(sd1||sd2);
+  if(sd) chips.push({cls:'hold',label:`${Math.round(yearsSince(sd)*10)/10} yr hold`});
 
-  if(p.vacancy&&parseFloat(p.vacancy)>10) chips.push({cls:'market',label:`${parseFloat(p.vacancy).toFixed(0)}% vacant`});
-  return chips.slice(0,4);
+  // Vacancy/occupancy
+  const occ=t?parseFloat(t.occupancy_pct):null;
+  if(occ!==null&&!isNaN(occ)&&(100-occ)>10) chips.push({cls:'market',label:`⬡ ${occ.toFixed(0)}% occ.`});
+  else if(p.vacancy&&parseFloat(p.vacancy)>10) chips.push({cls:'market',label:`${parseFloat(p.vacancy).toFixed(0)}% vacant`});
+
+  return chips.slice(0,5);
 }
 
-// ─── MAP ────────────────────────────────────────────────────────────────────
-const DC_COORDS = [
-  [38.93435,-77.119751],[38.935356,-77.118861],[38.949699,-77.099914],
-  [38.995548,-77.041018],[38.974781,-77.013763],[38.892852,-76.909393],
-  [38.791645,-77.039006],[38.800496,-77.039191],[38.810527,-77.037288],
-  [38.814635,-77.037343],[38.81609,-77.038412],[38.818885,-77.03912],
-  [38.819504,-77.038923],[38.820254,-77.039972],[38.821656,-77.039496],
-  [38.82209,-77.040758],[38.82294,-77.041107],[38.823604,-77.040618],
-  [38.823751,-77.039769],[38.824473,-77.038784],[38.830138,-77.037755],
-  [38.8321,-77.039116],[38.83371,-77.041889],[38.833332,-77.042579],
-  [38.831484,-77.041984],[38.83119,-77.042805],[38.83143,-77.043207],
-  [38.833361,-77.043774],[38.833819,-77.044442],[38.835928,-77.045218],
-  [38.838476,-77.045273],[38.839894,-77.046513],[38.840148,-77.04587],
-  [38.840632,-77.046736],[38.840655,-77.047489],[38.841259,-77.048025],
-  [38.841183,-77.046146],[38.840214,-77.044739],[38.840198,-77.043904],
-  [38.840558,-77.043406],[38.839795,-77.043065],[38.839516,-77.041784],
-  [38.839248,-77.038935],[38.839405,-77.036804],[38.840101,-77.034593],
-  [38.84281,-77.033902],[38.844549,-77.033066],[38.848016,-77.032267],
-  [38.851672,-77.032211],[38.855027,-77.032843],[38.85768,-77.03417],
-  [38.859749,-77.035387],[38.861111,-77.036805],[38.861265,-77.037585],
-  [38.863293,-77.038082],[38.863241,-77.039738],[38.86269,-77.039858],
-  [38.862375,-77.04037],[38.863236,-77.041725],[38.863372,-77.042763],
-  [38.863945,-77.042452],[38.86366,-77.040787],[38.864284,-77.037924],
-  [38.865106,-77.037735],[38.866664,-77.037998],[38.869732,-77.039464],
-  [38.871441,-77.040684],[38.87411,-77.043334],[38.875613,-77.045869],
-  [38.874958,-77.047219],[38.873966,-77.046394],[38.873046,-77.04654],
-  [38.872455,-77.04624],[38.872057,-77.046517],[38.871314,-77.049154],
-  [38.871647,-77.050155],[38.873906,-77.051682],[38.876564,-77.051531],
-  [38.879006,-77.05354],[38.878876,-77.053751],[38.879712,-77.054141],
-  [38.880342,-77.055581],[38.880262,-77.057931],[38.880914,-77.059141],
-  [38.888956,-77.064251],[38.889598,-77.064409],[38.89019,-77.063773],
-  [38.890944,-77.06399],[38.891715,-77.064643],[38.893557,-77.065133],
-  [38.89453,-77.066005],[38.894833,-77.065905],[38.897161,-77.067224],
-  [38.898094,-77.067595],[38.899229,-77.067572],[38.900288,-77.068641],
-  [38.901195,-77.070657],[38.901123,-77.073373],[38.902368,-77.078248],
-  [38.902274,-77.082656],[38.905767,-77.093216],[38.911916,-77.102032],
-  [38.913281,-77.103415],[38.915923,-77.104134],[38.91763,-77.105587],
-  [38.920026,-77.106801],[38.921636,-77.108513],[38.924657,-77.112659],
-  [38.927376,-77.114903],[38.928165,-77.115957],[38.929631,-77.116466],
-  [38.93435,-77.119751],
+// ─── MAP ──────────────────────────────────────────────────────────────────────
+const DC_COORDS=[
+  [38.93435,-77.119751],[38.935356,-77.118861],[38.949699,-77.099914],[38.995548,-77.041018],[38.974781,-77.013763],[38.892852,-76.909393],[38.791645,-77.039006],[38.800496,-77.039191],[38.810527,-77.037288],[38.814635,-77.037343],[38.81609,-77.038412],[38.818885,-77.03912],[38.819504,-77.038923],[38.820254,-77.039972],[38.821656,-77.039496],[38.82209,-77.040758],[38.82294,-77.041107],[38.823604,-77.040618],[38.823751,-77.039769],[38.824473,-77.038784],[38.830138,-77.037755],[38.8321,-77.039116],[38.83371,-77.041889],[38.833332,-77.042579],[38.831484,-77.041984],[38.83119,-77.042805],[38.83143,-77.043207],[38.833361,-77.043774],[38.833819,-77.044442],[38.835928,-77.045218],[38.838476,-77.045273],[38.839894,-77.046513],[38.840148,-77.04587],[38.840632,-77.046736],[38.840655,-77.047489],[38.841259,-77.048025],[38.841183,-77.046146],[38.840214,-77.044739],[38.840198,-77.043904],[38.840558,-77.043406],[38.839795,-77.043065],[38.839516,-77.041784],[38.839248,-77.038935],[38.839405,-77.036804],[38.840101,-77.034593],[38.84281,-77.033902],[38.844549,-77.033066],[38.848016,-77.032267],[38.851672,-77.032211],[38.855027,-77.032843],[38.85768,-77.03417],[38.859749,-77.035387],[38.861111,-77.036805],[38.861265,-77.037585],[38.863293,-77.038082],[38.863241,-77.039738],[38.86269,-77.039858],[38.862375,-77.04037],[38.863236,-77.041725],[38.863372,-77.042763],[38.863945,-77.042452],[38.86366,-77.040787],[38.864284,-77.037924],[38.865106,-77.037735],[38.866664,-77.037998],[38.869732,-77.039464],[38.871441,-77.040684],[38.87411,-77.043334],[38.875613,-77.045869],[38.874958,-77.047219],[38.873966,-77.046394],[38.873046,-77.04654],[38.872455,-77.04624],[38.872057,-77.046517],[38.871314,-77.049154],[38.871647,-77.050155],[38.873906,-77.051682],[38.876564,-77.051531],[38.879006,-77.05354],[38.878876,-77.053751],[38.879712,-77.054141],[38.880342,-77.055581],[38.880262,-77.057931],[38.880914,-77.059141],[38.888956,-77.064251],[38.889598,-77.064409],[38.89019,-77.063773],[38.890944,-77.06399],[38.891715,-77.064643],[38.893557,-77.065133],[38.89453,-77.066005],[38.894833,-77.065905],[38.897161,-77.067224],[38.898094,-77.067595],[38.899229,-77.067572],[38.900288,-77.068641],[38.901195,-77.070657],[38.901123,-77.073373],[38.902368,-77.078248],[38.902274,-77.082656],[38.905767,-77.093216],[38.911916,-77.102032],[38.913281,-77.103415],[38.915923,-77.104134],[38.91763,-77.105587],[38.920026,-77.106801],[38.921636,-77.108513],[38.924657,-77.112659],[38.927376,-77.114903],[38.928165,-77.115957],[38.929631,-77.116466],[38.93435,-77.119751],
 ];
 
 function initMap(){
   if(map) return;
-  map = L.map('map',{center:[38.906,-77.036],zoom:12,zoomControl:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-    attribution:'© CARTO',maxZoom:19
-  }).addTo(map);
+  map=L.map('map',{center:[38.906,-77.036],zoom:12,zoomControl:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19}).addTo(map);
   L.control.zoom({position:'bottomright'}).addTo(map);
-
-  // DC border using real boundary coordinates from official GeoJSON
-  L.polygon(DC_COORDS,{
-    color:'#1a73e8',weight:2.5,fill:false,opacity:0.8,dashArray:'8,5'
-  }).addTo(map);
-
-  markersLayer = L.layerGroup().addTo(map);
-
-  // Use Leaflet's own API to stop scroll propagation on the sidebar
-  // This is the correct fix -- Leaflet intercepts wheel events on the map container
-  const drawer = document.getElementById('detailDrawer');
-  L.DomEvent.disableScrollPropagation(drawer);
+  L.polygon(DC_COORDS,{color:'#1a73e8',weight:2.5,fill:false,opacity:0.8,dashArray:'8,5'}).addTo(map);
+  markersLayer=L.layerGroup().addTo(map);
+  L.DomEvent.disableScrollPropagation(document.getElementById('detailDrawer'));
 }
 
 function renderMap(){
   if(!map) return;
   markersLayer.clearLayers();
-  const tierColors={hot:'#d93025',warm:'#fa7b17',watch:'#f29900',cold:'#188038'};
   filtered.forEach(p=>{
-    const lat=parseFloat(p.latitude), lng=parseFloat(p.longitude);
+    const lat=parseFloat(p.latitude),lng=parseFloat(p.longitude);
     if(isNaN(lat)||isNaN(lng)) return;
-    const isSelected=p.id===selectedId;
-    const sz=isSelected?14:9;
-    const icon=L.divIcon({
-      className:'',
-      html:`<div class="map-dot ${p._tier}${isSelected?' selected':''}" style="width:${sz}px;height:${sz}px"></div>`,
-      iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]
-    });
-    const addr=p.address_line_1||p.property_address||'';
+    const sel=p.id===selectedId;
+    const sz=sel?14:9;
+    const tierColor={hot:'#d93025',warm:'#fa7b17',watch:'#f29900',cold:'#188038'}[p._tier];
+    const borderColor=p._source==='trepp'?'#7c3aed':'rgba(255,255,255,.8)';
+    const icon=L.divIcon({className:'',html:`<div class="map-dot${p._source==='trepp'?' trepp-only':''}${sel?' selected':''}" style="width:${sz}px;height:${sz}px;background:${tierColor};border-color:${borderColor}"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+    const addr=p.address_line_1||p.address||'';
     const m=L.marker([lat,lng],{icon});
-    m.bindTooltip(`<b>${addr}</b><br>Score: ${p._score} · ${p._tier.charAt(0).toUpperCase()+p._tier.slice(1)}`,{direction:'top',offset:[0,-4]});
+    const srcTag=p._trepp?'⬡ Trepp':'';
+    m.bindTooltip(`<b>${addr}</b><br>Score: ${p._score} · ${p._tier}${srcTag?' · '+srcTag:''}`,{direction:'top',offset:[0,-4]});
     m.on('click',()=>selectProperty(p.id));
     markersLayer.addLayer(m);
   });
 }
 
-// ─── PROPERTY DETAIL ────────────────────────────────────────────────────────
+// ─── PROPERTY DETAIL ──────────────────────────────────────────────────────────
 function selectProperty(id){
-  selectedId = id;
-  const p = allData.find(x=>String(x.id)===String(id));
+  selectedId=id;
+  const p=allData.find(x=>String(x.id)===String(id));
   if(!p) return;
-  renderList();
-  renderMap();
-  openDrawer(p);
-  // Pan map to property
-  if(map){
-    const lat=parseFloat(p.latitude),lng=parseFloat(p.longitude);
-    if(!isNaN(lat)&&!isNaN(lng)) map.panTo([lat,lng],{animate:true});
-  }
+  renderList();renderMap();openDrawer(p);
+  if(map&&!isNaN(parseFloat(p.latitude))){map.panTo([parseFloat(p.latitude),parseFloat(p.longitude)],{animate:true});}
 }
 
 function openDrawer(p){
-  const addr = p.address_line_1||p.property_address||'Unknown';
-  const city = [p.address_city||p.portfolio_city,p.address_state||p.portfolio_state].filter(Boolean).join(', ');
+  const addr=p.address_line_1||p.address||'Unknown';
+  const city=[p.address_city||p.city,p.address_state||p.state].filter(Boolean).join(', ');
   const tierLabel={hot:'Hot',warm:'Warm',watch:'Watch',cold:'Cold'}[p._tier];
-
   const catLabels={holdPeriod:'Hold',loanMaturity:'Maturity',distress:'Distress',marketSignals:'Market'};
-  const catBars = Object.entries(p._cats).map(([k,v])=>`
+
+  const catBars=Object.entries(p._cats).map(([k,v])=>`
     <div class="sb-row">
       <span class="sb-cat">${catLabels[k]||k}</span>
       <div class="sb-bar-wrap"><div class="sb-bar ${k==='holdPeriod'?'hold':k==='loanMaturity'?'maturity':k==='distress'?'distress':'market'}" style="width:${v}%"></div></div>
       <span class="sb-score">${v}</span>
     </div>`).join('');
 
-  const reasonsList = p._details.length
-    ? `<ul class="sb-reasons">${p._details.map(d=>`<li><span>${d.label}</span></li>`).join('')}</ul>`
-    : '<p style="font-size:12px;color:var(--text2);padding:4px 0">No specific signals detected</p>';
+  const reasonsList=p._details.length
+    ?`<ul class="sb-reasons">${p._details.map(d=>`<li class="${d.trepp?'trepp-signal':''}">${d.label}</li>`).join('')}</ul>`
+    :'<p style="font-size:12px;color:var(--text2)">No specific signals detected</p>';
 
-  const grid = buildDetailGrid(p);
-  const contacts = buildContacts(p);
-  const reoLink = p.link?`<a href="${p.link}" target="_blank" class="reo-link">View on Reonomy →</a>`:'';
-
-  document.getElementById('drawerContent').innerHTML = `
+  document.getElementById('drawerContent').innerHTML=`
     <div class="dd-header">
-      <div style="flex:1">
+      <div style="flex:1;min-width:0">
         <div class="dd-title">${addr}</div>
-        ${city?`<div class="dd-sub">${city}${p.property_subtype?' · '+p.property_subtype:''}</div>`:''}
+        <div class="dd-sub">${city||''}${p.property_subtype||p._trepp?.trepp_subtype?` · ${p.property_subtype||p._trepp?.trepp_subtype}`:''}</div>
       </div>
-      <div class="dd-score-big ${p._tier}">
-        <div class="ddsb-num">${p._score}</div>
-        <div class="ddsb-label">${tierLabel}</div>
-      </div>
-      <button class="dd-close" onclick="closeDrawer()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
+      <div class="dd-score-big ${p._tier}"><div class="ddsb-num">${p._score}</div><div class="ddsb-label">${tierLabel}</div></div>
+      <button class="dd-close" onclick="closeDrawer()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <div class="dd-body">
       <div class="dd-section">
         <div class="dd-section-title">Score Breakdown</div>
         <div class="score-breakdown">${catBars}</div>
-        <div class="dd-section-title" style="margin-top:12px">Why this score?</div>
+        <div class="dd-section-title" style="margin-top:8px">Why this score?</div>
         ${reasonsList}
       </div>
       <div class="dd-section">
         <div class="dd-section-title">Property Details</div>
-        ${grid}
+        ${buildDetailGrid(p)}
       </div>
-      ${contacts?`<div class="dd-section"><div class="dd-section-title">Contacts</div>${contacts}</div>`:''}
-      ${reoLink?`<div class="dd-section">${reoLink}</div>`:''}
+      ${buildContacts(p)?`<div class="dd-section"><div class="dd-section-title">Contacts</div>${buildContacts(p)}</div>`:''}
+      ${p.link?`<div class="dd-section"><a href="${p.link}" target="_blank" class="reo-link">View on Reonomy →</a></div>`:''}
     </div>`;
 
   document.getElementById('detailDrawer').classList.add('open');
@@ -1107,132 +952,148 @@ function openDrawer(p){
 }
 
 function buildDetailGrid(p){
-  const today = new Date();
-  const STALE = -365*24*3600*1000;
-  const mat1 = parseD(p.mortgage_maturity_date);
-  const mat2 = parseD(p.mortgage2_maturity_date);
-  const mat1Valid = mat1 && (mat1-today) > STALE;
-  const mat2Valid = mat2 && (mat2-today) > STALE;
-  const c = p._costar || {};
+  const t=p._trepp, c=p._costar;
+  const now=new Date(), STALE=-365*24*3600*1000;
+  const mat1=parseD(p.mortgage_maturity_date), mat2=parseD(p.mortgage2_maturity_date);
+  const mat1V=mat1&&(mat1-now)>STALE, mat2V=mat2&&(mat2-now)>STALE;
 
-  const section = (title, rows) => {
-    const filtered = rows.filter(r=>r&&r[1]!=null&&r[1]!==undefined&&r[1]!=='');
+  const sec=(title,cls,rows)=>{
+    const filtered=rows.filter(r=>r&&r[1]!=null&&r[1]!==''&&r[1]!==undefined);
     if(!filtered.length) return '';
-    return `<div class="dg-section-head">${title}</div>` +
-      filtered.map(([label,val,full])=>`
-        <div class="dg-item ${full?'full':''}">
-          <div class="dg-label">${label}</div>
-          <div class="dg-val">${val}</div>
-        </div>`).join('');
+    return `<div class="dg-section-head ${cls}">${title}</div>`+
+      filtered.map(([lbl,val,full,valCls])=>`<div class="dg-item${full?' full':''}"><div class="dg-label">${lbl}</div><div class="dg-val${valCls?' '+valCls:''}">${val}</div></div>`).join('');
   };
 
-  const reoSection = section('Property (Reonomy)', [
-    ['Address', p.address_full, true],
-    ['Type', p.property_type],
-    ['Subtype', p.property_subtype],
-    ['Year Built', p.year_built?Math.round(p.year_built):null],
-    ['Year Renovated', p.year_renovated?Math.round(p.year_renovated):null],
-    ['Total Units', p.total_units],
-    ['Bldg SF', p.gross_building_area?Math.round(p.gross_building_area).toLocaleString()+' SF':null],
-    ['APN', p.apn],
-    ['Owner', p.reported_owner_name, true],
-    ['Owner Mailing', p.reported_mailing_address_full, true],
-  ]);
+  const dscr=t?parseFloat(t.dscr_noi):null;
+  const ltv=t?parseFloat(t.ltv):null;
+  const dscrCls=dscr?dscr<1.0?'warn':dscr<1.25?'caution':'ok':null;
+  const ltvCls=ltv?ltv>90?'warn':ltv>80?'caution':'ok':null;
 
-  const saleSection = section(p._hasCostar ? 'Sale History (CoStar)' : 'Sale History', [
-    ['Sale Price', fmtMoney(p.sale_amount)],
-    ['Sale Date', fmtDate(p.sale_recorded_date)],
-    ['Price/SF', p.sales_price_per_sf?`$${parseFloat(p.sales_price_per_sf).toFixed(2)}`:null],
-    ['Price/Unit', fmtMoney(p.price_per_unit)],
-    p._hasCostar ? null : ['Prior Sale', fmtMoney(p.sale2_amount)],
-    p._hasCostar ? null : ['Prior Sale Date', fmtDate(p.sale2_recorded_date)],
-    // Always show Reonomy sale as secondary reference if CoStar overrode it
-    p._hasCostar && p._costar?.sale_price ? ['Reonomy Sale (ref)', fmtMoney(p._reonomy_sale_amount)] : null,
-  ]);
+  const grid=
+    sec('Property','reonomy',[
+      ['Address',p.address_full||p.address_line_1,true],
+      ['Type',p.property_type],['Subtype',p.property_subtype],
+      ['Year Built',p.year_built?Math.round(p.year_built):null],
+      ['Year Renovated',p.year_renovated?Math.round(p.year_renovated):null],
+      ['Units',p.total_units||t?.number_of_units],
+      ['Bldg SF',p.gross_building_area?Math.round(p.gross_building_area).toLocaleString()+' SF':null],
+      ['APN',p.apn],['Owner',p.reported_owner_name,true],
+      ['Owner Mailing',p.reported_mailing_address_full,true],
+    ])+
+    sec('Sale Data','sale',[
+      ['Sale Price',fmtMoney(p.sale_amount)],
+      ['Sale Date',fmtDate(p.sale_recorded_date)],
+      ['Price/SF',p.sales_price_per_sf?`$${parseFloat(p.sales_price_per_sf).toFixed(2)}`:null],
+      ['Price/Unit',fmtMoney(p.price_per_unit)],
+      ['Source',p._hasCostar?`CoStar (${p._matchMethod})`:'Reonomy'],
+      p._hasCostar?['Prior Sale (Reo)',fmtMoney(p._reonomy_sale_amount)]:null,
+    ])+
+    (t?sec('Trepp Loan Data','trepp',[
+      ['Property Name',t.property_name,true],
+      ['Loan Name',t.loan_name,true],
+      ['Source',t.source],
+      ['Originator',t.originator],
+      ['Origination Date',fmtDate(t.origination_date)],
+      ['Current Balance',fmtMoney(t.current_balance)],
+      ['Original Balance',fmtMoney(t.original_balance)],
+      ['Loan Rate',t.loan_rate?t.loan_rate+'%':null],
+      ['Rate Type',t.rate_type],
+      ['Amortization',t.amortization_type],
+      ['Loan Purpose',t.loan_purpose],
+      ['Maturity Date',fmtDate(t.maturity_date)],
+      ['UW Maturity',fmtDate(t.uw_maturity_date)],
+      ['Remaining Term',t.remaining_term?t.remaining_term+' months':null],
+      ['Periods Past Mat.',t.periods_past_maturity>0?t.periods_past_maturity:null],
+      ['DSCR (NOI)',dscr?dscr.toFixed(2):null,false,dscrCls],
+      ['DSCR (NCF)',t.dscr_ncf?parseFloat(t.dscr_ncf).toFixed(2):null],
+      ['LTV',ltv?ltv.toFixed(1)+'%':null,false,ltvCls],
+      ['Debt Yield (NOI)',t.debt_yield_noi?parseFloat(t.debt_yield_noi).toFixed(2)+'%':null],
+      ['Occupancy',t.occupancy_pct?parseFloat(t.occupancy_pct).toFixed(1)+'%':null],
+      ['Delinquency',t.delinquency_status&&t.delinquency_status!=='-'?t.delinquency_status:null,false,
+        t?.delinquency_status&&t.delinquency_status.toLowerCase()!=='current'?'warn':null],
+      ['Watchlist',t.watchlist_status&&t.watchlist_status!=='-'?t.watchlist_status:null,false,
+        t?.watchlist_status?.toLowerCase()==='yes'?'caution':null],
+      ['Special Servicer',t.spec_serv_status&&t.spec_serv_status!=='-'?t.spec_serv_status:null,false,
+        t?.spec_serv_status?.toLowerCase()==='yes'?'warn':null],
+      ['Spec. Serv. Name',t.special_servicer&&t.special_servicer!=='-'?t.special_servicer:null,true],
+      ['Transfer Reason',t.special_servicer_transfer_reason&&t.special_servicer_transfer_reason!=='-'?t.special_servicer_transfer_reason:null,true],
+      ['Modified',t.modified_loan&&t.modified_loan!=='-'?t.modified_loan:null],
+      ['Mod. Type',t.modification_type_servicer&&t.modification_type_servicer!=='-'?t.modification_type_servicer:null,true],
+      ['Extension Type',t.extension_type&&t.extension_type!=='-'?t.extension_type:null],
+      ['Rem. Extension Periods',t.remaining_extension_option_periods>0?t.remaining_extension_option_periods:null],
+      ['NOI',fmtMoney(t.noi)],['NCF',fmtMoney(t.ncf)],
+      ['Revenues',fmtMoney(t.revenues)],
+      ['Property Appraisal',fmtMoney(t.property_appraisal_value)],
+      ['NOI/Unit',t.noi_sqft_or_unit?'$'+parseFloat(String(t.noi_sqft_or_unit).replace(/,/g,'')).toLocaleString():null],
+      ['Owner 1',t.owner_1_name&&t.owner_1_name!=='-'?t.owner_1_name:null,true],
+      ['Owner 1 Phone',t.owner_1_phone&&t.owner_1_phone!=='-'?t.owner_1_phone:null],
+      ['Owner 1 Email',t.owner_1_email&&t.owner_1_email!=='-'?t.owner_1_email:null,true],
+      ['Bankruptcy Date',t.bankruptcy_date&&t.bankruptcy_date!=='-'?fmtDate(t.bankruptcy_date):null,false,'warn'],
+      ['REO Date',t.reo_date&&t.reo_date!=='-'?fmtDate(t.reo_date):null,false,'warn'],
+    ]):'<div style="padding:10px 0;font-size:12px;color:var(--text2)">⬡ No Trepp loan data matched for this property</div>')+
+    (mat1V||mat2V?sec('Reonomy Mortgage','mortgage',[
+      mat1V?['Lender',p.mortgage_standardized_name||p.mortgage_recorded_name,true]:null,
+      mat1V?['Amount',fmtMoney(p.mortgage_amount)]:null,
+      mat1V?['Maturity',fmtDate(p.mortgage_maturity_date)]:null,
+      mat2V?['Lender 2',p.mortgage2_standardized_name||p.mortgage2_recorded_name,true]:null,
+      mat2V?['Amount 2',fmtMoney(p.mortgage2_amount)]:null,
+      mat2V?['Maturity 2',fmtDate(p.mortgage2_maturity_date)]:null,
+    ]):'')+
+    (c?sec('CoStar Market Data','costar',[
+      ['County',c.property_county],['Submarket',c.submarket_name],
+      ['Building Class',c.building_class],
+      ['Vacancy',c.vacancy?parseFloat(c.vacancy).toFixed(1)+'%':null],
+      ['Cap Rate',c.actual_cap_rate?parseFloat(c.actual_cap_rate).toFixed(2)+'%':null],
+      ['Buyer',c.buyer_true_company,true],['Seller',c.seller_true_company,true],
+      ['Match',p._matchMethod],
+    ]):'');
 
-  const mortSection = section('Mortgage', [
-    mat1Valid?['Lender', p.mortgage_standardized_name||p.mortgage_recorded_name, true]:null,
-    mat1Valid?['Amount', fmtMoney(p.mortgage_amount)]:null,
-    mat1Valid?['Recorded', fmtDate(p.mortgage_recorded_date)]:null,
-    mat1Valid?['Maturity', fmtDate(p.mortgage_maturity_date)]:null,
-    mat2Valid?['Lender 2', p.mortgage2_standardized_name||p.mortgage2_recorded_name, true]:null,
-    mat2Valid?['Amount 2', fmtMoney(p.mortgage2_amount)]:null,
-    mat2Valid?['Maturity 2', fmtDate(p.mortgage2_maturity_date)]:null,
-  ]);
-
-  const costarSection = p._hasCostar ? section('Market Data (CoStar)', [
-    ['Address (CoStar)', c.property_address, true],
-    ['County', c.property_county],
-    ['Submarket', c.submarket_name],
-    ['Building Class', c.building_class],
-    ['Units (CoStar)', c.number_of_units],
-    ['Bldg SF (CoStar)', c.building_sf?Math.round(parseFloat(c.building_sf)).toLocaleString()+' SF':null],
-    ['Vacancy', c.vacancy?parseFloat(c.vacancy).toFixed(1)+'%':null],
-    ['Actual Cap Rate', c.actual_cap_rate?parseFloat(c.actual_cap_rate).toFixed(2)+'%':null],
-    ['Pro Forma Cap', c.pro_forma_cap_rate?parseFloat(c.pro_forma_cap_rate).toFixed(2)+'%':null],
-    ['Sale Price (CoStar)', fmtMoney(c.sale_price)],
-    ['Sale Date (CoStar)', fmtDate(c.sale_date)],
-    ['Price/Unit', fmtMoney(c.price_per_unit)],
-    ['Price/SF (CoStar)', c.price_per_sf?`$${parseFloat(c.price_per_sf).toFixed(2)}`:null],
-    ['Buyer', c.buyer_true_company, true],
-    ['Seller', c.seller_true_company, true],
-    ['Down Payment', fmtMoney(c.down_payment)],
-    ['1st TD Balance', fmtMoney(c.first_trust_deed_balance)],
-    ['1st TD Lender', c.first_trust_deed_lender, true],
-    ['1st TD Terms', c.first_trust_deed_terms, true],
-    ['Gross Income', fmtMoney(c.gross_income)],
-    ['Net Income', fmtMoney(c.net_income)],
-    ['Match Method', p._matchMethod==='coord'?'GPS coordinates':'Address string'],
-  ]) : '<div class="dg-item full"><div class="dg-label">CoStar</div><div class="dg-val" style="color:var(--text3)">No CoStar match found</div></div>';
-
-  return `<div class="detail-grid">${reoSection}${saleSection}${mortSection}${costarSection}</div>`;
+  return `<div class="detail-grid">${grid}</div>`;
 }
 
 function buildContacts(p){
-  const contacts=[];
   const cs=[
     {name:p.contact_name,co:p.contact_company_name,title:p.contact_title,phone:p.contact_phone_1,email:p.contact_email_1},
     {name:p.contact_2_name,co:p.contact_2_company_name,title:p.contact_2_title,phone:p.contact_2_phone_1,email:p.contact_2_email_1},
     {name:p.contact_3_name,co:p.contact_3_company_name,title:p.contact_3_title,phone:p.contact_3_phone_1,email:p.contact_3_email_1},
   ];
-  return cs.filter(c=>c.name).map(c=>`
+  const html=cs.filter(c=>c.name).map(c=>`
     <div class="contact-card">
       <div class="cc-name">${c.name}</div>
       ${c.title?`<div class="cc-title">${c.title}</div>`:''}
       ${c.co?`<div class="cc-title" style="color:var(--text)">${c.co}</div>`:''}
-      <div class="cc-contact">
-        ${c.phone?`<span>📞 ${c.phone}</span>`:''}
-        ${c.email?`<span>✉ ${c.email}</span>`:''}
-      </div>
+      <div class="cc-contact">${c.phone?`<span>📞 ${c.phone}</span>`:''}${c.email?`<span>✉ ${c.email}</span>`:''}</div>
     </div>`).join('');
+  // Trepp owner if no Reonomy contacts
+  if(!html&&p._trepp?.owner_1_name&&p._trepp.owner_1_name!=='-'){
+    const t=p._trepp;
+    return `<div class="contact-card">
+      <div class="cc-name">${t.owner_1_name}</div>
+      <div class="cc-title" style="color:var(--text2)">⬡ Trepp Owner</div>
+      <div class="cc-contact">
+        ${t.owner_1_phone&&t.owner_1_phone!=='-'?`<span>📞 ${t.owner_1_phone}</span>`:''}
+        ${t.owner_1_email&&t.owner_1_email!=='-'?`<span>✉ ${t.owner_1_email}</span>`:''}
+      </div>
+    </div>`;
+  }
+  return html;
 }
 
 function closeDrawer(){
   selectedId=null;
   document.getElementById('detailDrawer').classList.remove('open');
   document.getElementById('backdrop').classList.remove('show');
-  renderList();
-  renderMap();
+  renderList();renderMap();
 }
 
-// ─── WEIGHTS & CONFIG ───────────────────────────────────────────────────────
+// ─── WEIGHTS ──────────────────────────────────────────────────────────────────
 function toggleWeights(){
-  const panel = document.getElementById('weightsPanel');
-  const btn = document.getElementById('weightsToggleBtn');
-  const isOpen = panel.classList.contains('open');
-  if(isOpen){
-    panel.classList.remove('open');
-    btn.classList.remove('active');
-  } else {
-    panel.classList.add('open');
-    btn.classList.add('active');
-  }
+  const p=document.getElementById('weightsPanel'),b=document.getElementById('weightsToggleBtn');
+  const isOpen=p.classList.contains('open');
+  if(isOpen){p.classList.remove('open');b.classList.remove('active');}
+  else{p.classList.add('open');b.classList.add('active');}
 }
-
-function toggleHP(btn){
-  btn.classList.toggle('active');
-}
-
+function toggleHP(btn){btn.classList.toggle('active');}
 function addCustomHP(){
   const inp=document.getElementById('customHP');
   const yr=parseFloat(inp.value);
@@ -1240,32 +1101,20 @@ function addCustomHP(){
   const container=document.getElementById('holdChips');
   if(container.querySelector(`[data-yr="${yr}"]`)) return;
   const chip=document.createElement('button');
-  chip.className='hp-chip active';
-  chip.dataset.yr=yr;
-  chip.textContent=`${yr}yr`;
-  chip.onclick=()=>toggleHP(chip);
-  container.appendChild(chip);
-  inp.value='';
+  chip.className='hp-chip active';chip.dataset.yr=yr;chip.textContent=`${yr}yr`;
+  chip.onclick=()=>toggleHP(chip);container.appendChild(chip);inp.value='';
 }
-
 function recalculate(){
-  // Rebuild hold periods from chips
-  holdPeriods = Array.from(document.querySelectorAll('.hp-chip.active')).map(c=>parseFloat(c.dataset.yr));
-  // Rescore all data
-  allData = allData.map(p=>{
-    const merged = p._reonomy?{...p._reonomy,...(p._costar||{}),_reonomy:p._reonomy,_costar:p._costar}:p;
-    const {score,tier,details,cats}=scoreProperty(merged);
+  holdPeriods=Array.from(document.querySelectorAll('.hp-chip.active')).map(c=>parseFloat(c.dataset.yr));
+  allData=allData.map(p=>{
+    const {score,tier,details,cats}=scoreProperty(p);
     return {...p,_score:score,_tier:tier,_details:details,_cats:cats};
   });
-  applyFilters();
-  toggleWeights();
+  applyFilters();toggleWeights();
 }
+function setLoading(v){document.getElementById('loadingSpinner').style.display=v?'block':'none';}
 
-function setLoading(v){
-  document.getElementById('loadingSpinner').style.display=v?'block':'none';
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
+// ─── INIT ──────────────────────────────────────────────────────────────────────
 loadData();
 </script>
 </body>
