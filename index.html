@@ -717,8 +717,8 @@ async function loadData(){
   document.getElementById('matchInfo').textContent=`${total} props · ${teppMatchCount} Trepp matches · ${costarMatchCount} CoStar matches · ${treppOnly.length} Trepp-only`;
   setLoading(false);
   document.getElementById('loadingList').style.display='none';
-  applyFilters();
   initMap();
+  applyFilters();
 }
 
 // ─── FILTERING & SORTING ──────────────────────────────────────────────────────
