@@ -836,13 +836,14 @@ async function loadData(){
       property_subtype: t.trepp_subtype,
       year_built: t.year_built,
       total_units: t.number_of_units,
-      latitude: null, longitude: null,
+      // Use stored coordinates from Supabase if available
+      latitude:  t.latitude  ? parseFloat(t.latitude)  : null,
+      longitude: t.longitude ? parseFloat(t.longitude) : null,
       _trepp: t,
       _hasCostar: false,
       _costar: null,
       _source: 'trepp',
       _matchMethod: null,
-      _geocoded: false,
     };
     const {score,tier,details,cats}=scoreProperty(pseudo);
     allData.push({...pseudo,_score:score,_tier:tier,_details:details,_cats:cats});
@@ -855,33 +856,31 @@ async function loadData(){
   document.getElementById('loadingList').style.display='none';
   initMap();
   applyFilters();
-  // Geocode Trepp-only entries in the background
+  // Only geocode any remaining records that still lack coordinates (fallback)
   geocodeTreppOnly();
 }
 
-// ─── BACKGROUND GEOCODING FOR TREPP-ONLY ENTRIES ─────────────────────────────
+// ─── BACKGROUND GEOCODING — fallback for any records still missing coordinates ─
 async function geocodeTreppOnly(){
   const ungeocoded = allData.filter(p=>p._source==='trepp'&&!p.latitude);
-  if(!ungeocoded.length) return;
-  document.getElementById('geocodeStatus').textContent = `Geocoding ${ungeocoded.length} Trepp-only addresses...`;
+  if(!ungeocoded.length) return; // All coords already stored — nothing to do
+  document.getElementById('geocodeStatus').textContent = `Geocoding ${ungeocoded.length} remaining addresses...`;
   document.getElementById('geocodeStatus').style.display = 'inline';
   let done = 0;
   for(const p of ungeocoded){
     const addr = [p.address_line_1, p.address_city, p.address_state].filter(Boolean).join(', ');
     try{
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`;
-      const res = await fetch(url, {headers:{'Accept-Language':'en'}});
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&countrycodes=us`;
+      const res = await fetch(url, {headers:{'Accept-Language':'en','User-Agent':'GreysteelDashboard/1.0'}});
       const data = await res.json();
       if(data&&data.length){
-        p.latitude = parseFloat(data[0].lat);
+        p.latitude  = parseFloat(data[0].lat);
         p.longitude = parseFloat(data[0].lon);
       }
     } catch(e){}
     done++;
-    document.getElementById('geocodeStatus').textContent = `Geocoding Trepp addresses... ${done}/${ungeocoded.length}`;
-    // Re-render map periodically
+    document.getElementById('geocodeStatus').textContent = `Geocoding... ${done}/${ungeocoded.length}`;
     if(done%5===0) renderMap();
-    // Nominatim rate limit: max 1 request/second
     await new Promise(r=>setTimeout(r,1100));
   }
   document.getElementById('geocodeStatus').style.display = 'none';
