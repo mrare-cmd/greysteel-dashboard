@@ -825,10 +825,23 @@ function applyFilters(){
   const sort = document.getElementById('sortSelect').value;
   if(sort==='score') data.sort((a,b)=>b._score-a._score);
   else if(sort==='maturity'){
+    const getBestMatDate = p => {
+      const STALE = -365*24*3600*1000;
+      const today = new Date();
+      const m1 = parseD(p.mortgage_maturity_date);
+      const m2 = parseD(p.mortgage2_maturity_date);
+      const valid = [m1,m2].filter(d => d && (d-today) > STALE);
+      if(!valid.length) return null;
+      const future = valid.filter(d => d > today);
+      if(future.length) return future.reduce((a,b)=>a<b?a:b); // soonest future first
+      return valid.reduce((a,b)=>a>b?a:b); // most recent past
+    };
     data.sort((a,b)=>{
-      const da=parseD(a.mortgage_maturity_date), db2=parseD(b.mortgage_maturity_date);
-      if(!da&&!db2)return 0; if(!da)return 1; if(!db2)return -1;
-      return da-db2;
+      const da=getBestMatDate(a), db=getBestMatDate(b);
+      if(!da&&!db) return 0;
+      if(!da) return 1;  // no maturity date goes to bottom
+      if(!db) return -1;
+      return da-db; // soonest maturity at top
     });
   }
   else if(sort==='hold'){
@@ -933,31 +946,47 @@ function buildChips(p){
 }
 
 // ─── MAP ────────────────────────────────────────────────────────────────────
+function drawDCBorder(){
+  // DC's actual boundary -- truncated diamond (Virginia portion retroceded 1846)
+  // These are the real boundary coordinates tracing DC clockwise from the north corner
+  const dcCoords = [
+    [38.9953,-77.0402], // North corner (boundary stone)
+    [38.9809,-77.0110], // NE quadrant
+    [38.9601,-76.9836],
+    [38.9352,-76.9556],
+    [38.9128,-76.9298],
+    [38.8930,-76.9094], // East corner
+    [38.8679,-76.9094], // SE along MD border
+    [38.8412,-76.9094],
+    [38.8182,-76.9094],
+    [38.7916,-76.9094], // SE corner
+    [38.7913,-76.9400], // South -- follows Potomac/Anacostia area
+    [38.7914,-76.9800],
+    [38.7915,-77.0117], // Jones Point (southernmost tip, Potomac)
+    [38.8060,-77.0420], // Up Potomac NW
+    [38.8250,-77.0596],
+    [38.8450,-77.0750],
+    [38.8660,-77.0910],
+    [38.8939,-77.1197], // West corner
+    [38.9170,-77.0940], // NW quadrant
+    [38.9370,-77.0720],
+    [38.9580,-77.0560],
+    [38.9750,-77.0478],
+    [38.9953,-77.0402], // Back to north corner
+  ];
+  L.polygon(dcCoords, {
+    color:'#1a73e8', weight:2.5, fill:false, opacity:0.75, dashArray:'8,5'
+  }).addTo(map);
+}
+
 function initMap(){
   if(map) return;
-  map = L.map('map',{center:[38.9,-77.03],zoom:11,zoomControl:false});
+  map = L.map('map',{center:[38.906,-77.036],zoom:12,zoomControl:false});
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
     attribution:'© CARTO',maxZoom:19
   }).addTo(map);
   L.control.zoom({position:'bottomright'}).addTo(map);
-
-  // Add DC border
-  fetch('https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/DC.geojson')
-    .then(r=>r.json())
-    .then(gj=>{
-      L.geoJSON(gj,{
-        style:{color:'#1a73e8',weight:2.5,fill:false,opacity:0.7,dashArray:'6,4'}
-      }).addTo(map);
-    })
-    .catch(()=>{
-      // Fallback DC boundary polygon
-      const dcBorder = [
-        [38.9953,-77.0386],[38.9929,-77.1197],[38.9601,-77.1195],
-        [38.8893,-77.0419],[38.7911,-77.0402],[38.7916,-76.9094],
-        [38.8930,-76.9090],[38.9953,-77.0386]
-      ];
-      L.polygon(dcBorder,{color:'#1a73e8',weight:2.5,fill:false,opacity:0.7,dashArray:'6,4'}).addTo(map);
-    });
+  drawDCBorder();
   markersLayer = L.layerGroup().addTo(map);
 }
 
