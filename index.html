@@ -229,6 +229,16 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(-
     <button class="src-btn" data-src="trepp-only" onclick="setSrc('trepp-only')">Trepp Only</button>
   </div>
   <div class="toolbar-sep"></div>
+  <select class="sort-select" id="loanSrcSelect" onchange="applyFilters()" style="font-size:12px;">
+    <option value="all">All Loan Sources</option>
+    <option value="Fannie Mae">Fannie Mae</option>
+    <option value="Freddie Mac">Freddie Mac</option>
+    <option value="CMBS">CMBS</option>
+    <option value="CRE CLO">CRE CLO</option>
+    <option value="FHA">FHA</option>
+    <option value="Ginnie Mae">Ginnie Mae</option>
+  </select>
+  <div class="toolbar-sep"></div>
   <select class="sort-select" id="sortSelect" onchange="applyFilters()">
     <option value="score">Sort: Priority Score</option>
     <option value="maturity">Sort: Soonest Maturity</option>
@@ -238,6 +248,7 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(-
   </select>
   <span class="tb-count" id="tbCount"></span>
   <span class="tb-count" id="matchInfo" style="color:var(--text3)"></span>
+  <span id="geocodeStatus" style="display:none;font-size:11px;color:var(--purple);flex-shrink:0;"></span>
 </div>
 
 <!-- Weights Panel -->
@@ -707,6 +718,7 @@ async function loadData(){
       _costar: null,
       _source: 'trepp',
       _matchMethod: null,
+      _geocoded: false,
     };
     const {score,tier,details,cats}=scoreProperty(pseudo);
     allData.push({...pseudo,_score:score,_tier:tier,_details:details,_cats:cats});
@@ -719,9 +731,40 @@ async function loadData(){
   document.getElementById('loadingList').style.display='none';
   initMap();
   applyFilters();
+  // Geocode Trepp-only entries in the background
+  geocodeTreppOnly();
 }
 
-// ─── FILTERING & SORTING ──────────────────────────────────────────────────────
+// ─── BACKGROUND GEOCODING FOR TREPP-ONLY ENTRIES ─────────────────────────────
+async function geocodeTreppOnly(){
+  const ungeocoded = allData.filter(p=>p._source==='trepp'&&!p.latitude);
+  if(!ungeocoded.length) return;
+  document.getElementById('geocodeStatus').textContent = `Geocoding ${ungeocoded.length} Trepp-only addresses...`;
+  document.getElementById('geocodeStatus').style.display = 'inline';
+  let done = 0;
+  for(const p of ungeocoded){
+    const addr = [p.address_line_1, p.address_city, p.address_state].filter(Boolean).join(', ');
+    try{
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`;
+      const res = await fetch(url, {headers:{'Accept-Language':'en'}});
+      const data = await res.json();
+      if(data&&data.length){
+        p.latitude = parseFloat(data[0].lat);
+        p.longitude = parseFloat(data[0].lon);
+      }
+    } catch(e){}
+    done++;
+    document.getElementById('geocodeStatus').textContent = `Geocoding Trepp addresses... ${done}/${ungeocoded.length}`;
+    // Re-render map periodically
+    if(done%5===0) renderMap();
+    // Nominatim rate limit: max 1 request/second
+    await new Promise(r=>setTimeout(r,1100));
+  }
+  document.getElementById('geocodeStatus').style.display = 'none';
+  renderMap();
+}
+
+// ─── FILTERING & SORTING (continued)
 function applyFilters(){
   let data=[...allData];
   // Search
@@ -743,6 +786,9 @@ function applyFilters(){
   // Source
   if(activeSrc==='trepp') data=data.filter(p=>p._trepp);
   else if(activeSrc==='trepp-only') data=data.filter(p=>p._source==='trepp');
+  // Loan source
+  const loanSrc=document.getElementById('loanSrcSelect')?.value||'all';
+  if(loanSrc!=='all') data=data.filter(p=>p._trepp&&(p._trepp.source||'').includes(loanSrc));
 
   // Sort
   const sort=document.getElementById('sortSelect').value;
