@@ -415,7 +415,14 @@ header{
 <div class="main">
   <div class="list-panel" id="listPanel">
     <div class="loading-list" id="loadingList">
-      ${Array(8).fill('<div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>').join('')}
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
+      <div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:1px"></div>
     </div>
   </div>
   <div class="map-panel">
@@ -513,7 +520,7 @@ function scoreProperty(p){
   // Logic: prefer the one with the future or most recent maturity date
   // Ignore maturities that are more than 5 years in the past (stale/paid off)
   const today2 = new Date();
-  const STALE_CUTOFF_DAYS = -5 * 365;
+  const STALE_CUTOFF_DAYS = -365; // ignore loans matured more than 1 year ago
   const mats = [
     {date:parseD(p.mortgage_maturity_date), amt:parseFloat(p.mortgage_amount)||0,
      lender:p.mortgage_standardized_name||p.mortgage_recorded_name, name:'Primary loan'},
@@ -628,9 +635,10 @@ function scoreProperty(p){
     }
   }
   if(p._hasCostar){
-    details.push({cat:'Market',label:`CoStar data matched — vacancy and cap rate data augmented`});
+    const method = p._matchMethod === 'coord' ? 'coordinate match' : 'address match';
+    details.push({cat:'Market',label:`CoStar data linked via ${method} — vacancy and cap rate data augmented`});
   } else {
-    details.push({cat:'Market',label:`No CoStar match — vacancy/cap rate data unavailable`});
+    details.push({cat:'Market',label:`No CoStar match found — vacancy/cap rate data unavailable`});
   }
 
   // WEIGHTED FINAL
@@ -683,51 +691,107 @@ async function loadData(){
   // Fetch ALL CoStar records
   const costar = await fetchAll('costar2', null);
 
-  // Build CoStar lookup by normalized address
-  const costarMap = {};
+  // Match and merge -- ALL Reonomy properties are included
+  // Step 1: coordinate match (within ~50 meters)
+  // Step 2: fallback to normalized address match
+  let matchCount = 0;
+  let coordMatchCount = 0;
+  let addrMatchCount = 0;
+
+  // Build CoStar spatial index -- bucket by rounded lat/lng for fast lookup
+  const costarByCoord = {};
+  const costarByAddr = {};
   (costar||[]).forEach(c=>{
-    if(c.property_address){
-      const key = normalizeAddr(c.property_address);
-      costarMap[key] = c;
+    // Address index
+    const ak = normalizeAddr(c.property_address);
+    if(ak) costarByAddr[ak] = c;
+    // Coordinate index -- bucket to ~0.01 degree grid (~1km)
+    const lat = parseFloat(c.latitude), lng = parseFloat(c.longitude);
+    if(!isNaN(lat) && !isNaN(lng)){
+      const bucket = `${Math.round(lat*100)}_${Math.round(lng*100)}`;
+      if(!costarByCoord[bucket]) costarByCoord[bucket] = [];
+      costarByCoord[bucket].push({...c, _lat:lat, _lng:lng});
     }
   });
 
-  // Match and merge -- ALL Reonomy properties are included
-  // CoStar data augments them where address matches (vacancy, cap rate, etc.)
-  let matchCount = 0;
   allData = (props||[]).map(p=>{
-    const key = normalizeAddr(p.address_line_1||'');
-    const costarMatch = costarMap[key] || null;
-    if(costarMatch) matchCount++;
-    // Reonomy fields take priority; CoStar fills in vacancy, cap rate, etc.
-    const merged = costarMatch
-      ? {
-          ...p,
-          // CoStar-only fields we want to augment with
-          vacancy: costarMatch.vacancy || p.vacancy,
-          actual_cap_rate: costarMatch.actual_cap_rate || p.actual_cap_rate,
-          pro_forma_cap_rate: costarMatch.pro_forma_cap_rate,
-          price_per_unit: costarMatch.price_per_unit,
-          building_class: costarMatch.building_class,
-          submarket_name: costarMatch.submarket_name,
-          buyer_true_company: costarMatch.buyer_true_company,
-          seller_true_company: costarMatch.seller_true_company,
-          _costar: costarMatch,
+    const pLat = parseFloat(p.latitude), pLng = parseFloat(p.longitude);
+    let costarMatch = null;
+    let matchMethod = null;
+
+    // Try coordinate match first (check nearby buckets)
+    if(!isNaN(pLat) && !isNaN(pLng)){
+      const bLat = Math.round(pLat*100), bLng = Math.round(pLng*100);
+      let bestDist = Infinity;
+      // Check 3x3 grid of buckets to handle edge cases
+      for(let dlat=-1; dlat<=1; dlat++){
+        for(let dlng=-1; dlng<=1; dlng++){
+          const bucket = `${bLat+dlat}_${bLng+dlng}`;
+          const candidates = costarByCoord[bucket] || [];
+          for(const c of candidates){
+            const dist = haversineMeters(pLat, pLng, c._lat, c._lng);
+            if(dist < 75 && dist < bestDist){ // within 75 meters
+              bestDist = dist;
+              costarMatch = c;
+              matchMethod = 'coord';
+            }
+          }
         }
-      : p;
+      }
+    }
+
+    // Fallback: normalized address match
+    if(!costarMatch){
+      const ak = normalizeAddr(p.address_line_1||'');
+      if(ak && costarByAddr[ak]){
+        costarMatch = costarByAddr[ak];
+        matchMethod = 'addr';
+      }
+    }
+
+    if(costarMatch){
+      matchCount++;
+      if(matchMethod==='coord') coordMatchCount++;
+      else addrMatchCount++;
+    }
+
+    const merged = costarMatch ? {
+      ...p,
+      vacancy: costarMatch.vacancy || p.vacancy,
+      actual_cap_rate: costarMatch.actual_cap_rate || p.actual_cap_rate,
+      pro_forma_cap_rate: costarMatch.pro_forma_cap_rate,
+      price_per_unit: costarMatch.price_per_unit,
+      building_class: costarMatch.building_class,
+      submarket_name: costarMatch.submarket_name,
+      buyer_true_company: costarMatch.buyer_true_company,
+      seller_true_company: costarMatch.seller_true_company,
+      _costar: costarMatch,
+      _matchMethod: matchMethod,
+    } : p;
     merged._hasCostar = !!costarMatch;
+
     const {score,tier,details,cats} = scoreProperty(merged);
     return {...merged, _score:score, _tier:tier, _details:details, _cats:cats};
   });
 
-  console.log(`Loaded ${allData.length} properties, ${matchCount} matched with CoStar`);
+  console.log(`Loaded ${allData.length} properties | CoStar matches: ${matchCount} (${coordMatchCount} by coords, ${addrMatchCount} by address)`);
   document.getElementById('matchInfo').textContent =
-    `${allData.length.toLocaleString()} properties · ${matchCount} CoStar matches`;
+    `${allData.length.toLocaleString()} properties · ${matchCount} CoStar matches (${coordMatchCount} coord, ${addrMatchCount} addr)`;
 
   setLoading(false);
   document.getElementById('loadingList').style.display='none';
   applyFilters();
   initMap();
+}
+
+function haversineMeters(lat1, lng1, lat2, lng2){
+  const R = 6371000;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function normalizeAddr(s){
